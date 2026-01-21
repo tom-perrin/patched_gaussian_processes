@@ -13,7 +13,7 @@ class GaussianProcess(NamedTuple):
 
 def generate_gaussian_clouds(
         points_distribution: list[tuple[GaussianProcess, int]], 
-        seed: int | None = None
+        seed = None
     ) -> np.ndarray:
 
     rng = np.random.default_rng(seed)
@@ -30,7 +30,7 @@ def generate_gaussian_clouds(
 def generate_uniform_cloud(
         dimension : int,
         nb_sample: int,
-        seed: int | None = None
+        seed = None
     ) -> np.ndarray:
 
     rng = np.random.default_rng(seed)
@@ -41,7 +41,7 @@ def generate_uniform_cloud(
 
 def cloud_from_file(
         json_path: str, 
-        seed: int | None = None
+        seed = None
     ) -> np.ndarray:
 
     with open(json_path, 'r', encoding='utf-8') as f:

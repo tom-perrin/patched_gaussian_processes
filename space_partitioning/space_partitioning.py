@@ -37,6 +37,7 @@ def principal_direction(X: np.ndarray) -> np.ndarray:
 
 def split_by_projection(X: np.ndarray, v: np.ndarray):
     """
+    !!! LEGACY !!!
     Sépare un jeu de données en deux sous-jeux de même taille
     selon la projection sur un vecteur donné.
 
@@ -66,12 +67,17 @@ def split_by_projection(X: np.ndarray, v: np.ndarray):
     X_low = X[sorted_idx[:half]]
     X_high = X[sorted_idx[half:]]
 
+    (X_low[-1] @ v + X_high[0] @ v) / 2
+
     return [X_low, X_high]
 
 def recursive_partition(
         depth: int, 
         point_groups: list[np.ndarray]
     ) -> list[np.ndarray]:
+    """
+    !!! LEGACY !!!
+    """
 
     if depth <= 0:
         return point_groups
@@ -80,7 +86,7 @@ def recursive_partition(
 
     for points in point_groups:
         v = principal_direction(points)
-        sub_groups = split_by_projection(points,v)
+        cap, sub_groups = split_by_projection(points,v)
         new_list.extend(recursive_partition(depth - 1, sub_groups))
     
     return new_list
@@ -90,8 +96,12 @@ def space_tree_partionning(
         depth: int,
     ) -> list[np.ndarray]:
     """
-        points : shape (n, d), n points of dimension d.
-        depth : depth of tree, cloud will be partitionned in 2^depth groups.
-    """
+    !!! LEGACY !!!
+    Splits data in 2^depth groups using the split by projection method recursively.
 
+    Parameters
+    ----------
+    points : shape (n, d), n points of dimension d.
+    depth : depth of tree, cloud will be partitionned in 2^depth groups.
+    """
     return recursive_partition(depth, [points])

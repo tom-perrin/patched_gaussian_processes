@@ -121,6 +121,7 @@ class PartitioningGrid:
         '''
         Computes the matrix of all frontiers between regions (both end points if they exist)
         '''
-        N = len(self.nodes)
-        matrix = [[self.frontier(i,j) for j in range(N)] for i in range(N)]
-        return matrix
+        if not hasattr(self, '_cached_f_matrix'):
+            N = len(self.nodes)
+            self._cached_f_matrix = [[self.frontier(i, j) for j in range(N)] for i in range(N)]
+        return self._cached_f_matrix

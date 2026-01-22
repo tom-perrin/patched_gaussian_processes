@@ -184,9 +184,11 @@ class PartitioningGraph:
         '''
         Computes the matrix of all frontiers between regions (both end points if they exist)
         '''
-        N = len(self.nodes)
-        matrix = [
-            [self.G[i][j]['geometry'] if self.G.has_edge(i, j) else None 
-            for j in range(N)] 
-            for i in range(N)]
-        return matrix
+        if not hasattr(self, '_cached_f_matrix'):
+            N = len(self.nodes)
+            matrix = [
+                [self.G[i][j]['geometry'] if self.G.has_edge(i, j) else None 
+                for j in range(N)] 
+                for i in range(N)]
+            self._cached_f_matrix = matrix
+        return self._cached_f_matrix

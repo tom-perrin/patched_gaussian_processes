@@ -27,7 +27,7 @@ def get_clipped_frontier(
         external_constraints: list = None
         ):
     '''
-    Computes the frontier segment of a node's split, clipped by the previous frontiers
+    Computes the 2 end points of the frontier segment of a node's split, clipped by the previous frontiers
     '''
     if node.pdir is None:
         return None
@@ -69,11 +69,13 @@ def get_clipped_frontier(
         return None
     return anchor + t_min * v_orth, anchor + t_max * v_orth # coordinates of the 2 end points
 
-def are_neighbors(
+def get_shared_frontier(
         leaf_a: PartitioningTree,
-        leaf_b: PartitioningTree
+        leaf_b: PartitioningTree,
         ):
-    
+    '''
+    Computes the 2 end points of the shared frontier between two regions (if it exists)
+    '''
     # Finds path to leaf_a from tree root
     path_a = []
     curr = leaf_a
@@ -90,18 +92,29 @@ def are_neighbors(
             break
         curr = curr.parent
     
-    if lca is None or lca.pdir is None:
-        return False
+    if lca is None or lca.pdir is None: # no common ancestor
+        return None
     
     # Gets consraints from both leaves and creates associated frontier
     combined_constraints = get_constraints(leaf_a) + get_constraints(leaf_b)
     segment = get_clipped_frontier(lca, external_constraints=combined_constraints)
 
-    # Frontier segment non-empty => shared border => leaves are neighbors
+    # Returns end points
     if segment is not None:
         p1, p2 = segment
-        return np.linalg.norm(p1 - p2) > 1e-5
-    return False
+        if np.linalg.norm(p1 - p2) > 1e-5:
+            return segment
+    return None
+
+def are_neighbors(
+        leaf_a: PartitioningTree,
+        leaf_b: PartitioningTree
+        ):
+    '''
+    Tells if the regions corresponding to two leaves are neighbors i.e. share a common frontier
+    '''
+    return get_shared_frontier(leaf_a, leaf_b) is not None
+
 
 class PartitioningGraph:
     '''
@@ -114,16 +127,17 @@ class PartitioningGraph:
         # Fully extends tree if not done already
         tree.fully_extend()
         
-        # Creates leaves = nodes from partitioning tree
-        leaves = tree.get_leaves()
+        # Creates nodes list and empty graph
+        self.nodes = tree.get_leaves()
         self.G = nx.Graph()
 
-        # Finds all neighbors = edges
-        for i in range(len(leaves)):
+        # Finds all neighbors = edges for each node 
+        for i in range(len(self.nodes)):
             self.G.add_node(i)
-            for j in range(i+1, len(leaves)):
-                if are_neighbors(leaves[i], leaves[j]):
-                    self.G.add_edge(i,j)
+            for j in range(i+1, len(self.nodes)):
+                segment = get_shared_frontier(self.nodes[i], self.nodes[j])
+                if segment is not None:
+                    self.G.add_edge(i, j, geometry=segment) # end points of frontier segment stored in G[i][j]['geometry']
     
     def display(self):
         plt.figure()
@@ -139,3 +153,17 @@ class PartitioningGraph:
             )
         plt.title('Leaf Adjacency Graph')
         plt.show()
+    
+    def frontier(self, i:int, j:int):
+        '''
+        Computes the 2 end points of the frontier between i and j (if they are neighbors)
+        '''
+        if self.G.has_edge(i, j):
+            return self.G[i][j]['geometry']
+        return None
+    
+    def adjacency_matrix(self):
+        '''
+        Computes the adjacency matrix of the regions
+        '''
+        return nx.to_numpy_array(self.G)

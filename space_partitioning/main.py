@@ -31,6 +31,7 @@ tree = PartitioningTree(X_data, DEPTH)
 tree.fully_extend()
 
 # plot_tree(tree)
+# graph = PartitioningGraph(tree)
 # graph.display()
 
 plot_tree_graph(tree)

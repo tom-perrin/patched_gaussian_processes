@@ -4,6 +4,9 @@ import networkx as nx
 
 from tree_partitioning import PartitioningTree
 from graph_partitioning import PartitioningGraph, get_clipped_frontier 
+from grid_partitioning import PartitioningGrid
+
+# --------------------------------------------------
 
 def _prepare():
     plt.figure()
@@ -28,6 +31,10 @@ def _draw_boundaries(node: PartitioningTree, ax: plt.Axes):
 
 def display_groups(groups: list[np.ndarray], ax: plt.Axes, size=10, alpha=0.7) -> None:
     for i, points in enumerate(groups):
+        # Skip points if empty group
+        if points.shape[0] == 0:
+            continue
+
         ax.scatter(
             points[:, 0], 
             points[:, 1],
@@ -47,42 +54,7 @@ def display_groups(groups: list[np.ndarray], ax: plt.Axes, size=10, alpha=0.7) -
         )
 
 
-def plot_tree_boundaries(node: PartitioningTree):
-    '''
-    !!! LEGACY !!!
-    '''
-    if node is None or (node.left is None and node.right is None):
-        return
-    
-    # Plot frontier line
-    segment = get_clipped_frontier(node)
-    if segment is not None:
-        p1, p2 = segment
-        plt.plot(
-            [p1[0], p2[0]], [p1[1], p2[1]],
-            'k--',
-            lw = 1,
-            alpha = 0.9,
-            zorder = 10,
-        )
-    
-    # Recursion
-    plot_tree_boundaries(node.left)
-    plot_tree_boundaries(node.right)
-
 def plot_tree(tree: PartitioningTree, size=10, alpha=0.7):
-    '''
-    !!! LEGACY !!!
-    Prints datasets of all leaves and boundaries of the partitioning tree.
-    '''
-    _prepare()
-    leaves_data = tree.get_leaves_data()
-    display_groups(leaves_data)
-    plot_tree_boundaries(tree)
-    _show()
-
-
-def plot_tree_graph(tree: PartitioningTree, size=10, alpha=0.7):
     '''
     Prints datasets and boundaries & adjacency graph of the partition side by side
     '''
@@ -107,6 +79,53 @@ def plot_tree_graph(tree: PartitioningTree, size=10, alpha=0.7):
     
     nx.draw(
         graph.G, pos, ax=ax2, 
+        with_labels=True, 
+        node_color='mediumpurple', 
+        node_size=600, 
+        font_weight='bold',
+        edge_color='gray'
+    )
+
+    # Show figure
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_grid(grid: PartitioningGrid, size=10, alpha=0.7):
+    '''
+    Docstring for plot_grid
+    '''
+    # Define graph and figure
+    X = grid.X
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
+    
+    # --- Left Side : Partitioned Space ---
+    ax1.set_title('Partitioned Space')
+    display_groups(grid.nodes, ax1, size=size, alpha=alpha)
+
+    # Grid lines
+    for i in range(grid.n + 1): 
+        ax1.axvline(grid.x_min + i*grid.dx, color='k', linestyle='--', lw=1, alpha=0.9)
+    for j in range(grid.p + 1): 
+        ax1.axhline(grid.y_min + j*grid.dy, color='k', linestyle='--', lw=1, alpha=0.9)
+
+    ax1.axis('equal')
+    ax1.grid(True, linestyle=':', alpha=0.4)
+
+    # --- Right Side : Adjacency Graph ---
+    ax2.set_title('Region Adjacency Graph')
+    
+    # Coordinate-based node layout
+    pos = {}
+    counter = 0
+    for j in reversed(range(grid.p)):
+        for i in range(grid.n):
+            # pos[index] = (column_index, row_index)
+            pos[counter] = np.array([i, j])
+            counter += 1
+
+    nx.draw(
+        grid.G, pos, ax=ax2, 
         with_labels=True, 
         node_color='mediumpurple', 
         node_size=600, 

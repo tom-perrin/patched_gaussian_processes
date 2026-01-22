@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 
 from tree_partitioning import PartitioningTree
 
+# --------------------------------------------------
+
 def get_constraints(node: PartitioningTree):
     '''
     Returns a list of all geometric constraints (v, threshold, sign) for a given node (partitioning tree).
@@ -20,6 +22,7 @@ def get_constraints(node: PartitioningTree):
         curr = p
     
     return constraints
+
 
 def get_clipped_frontier(
         node: PartitioningTree, 
@@ -69,6 +72,7 @@ def get_clipped_frontier(
         return None
     return anchor + t_min * v_orth, anchor + t_max * v_orth # coordinates of the 2 end points
 
+
 def get_shared_frontier(
         leaf_a: PartitioningTree,
         leaf_b: PartitioningTree,
@@ -106,6 +110,7 @@ def get_shared_frontier(
             return segment
     return None
 
+
 def are_neighbors(
         leaf_a: PartitioningTree,
         leaf_b: PartitioningTree
@@ -118,7 +123,25 @@ def are_neighbors(
 
 class PartitioningGraph:
     '''
-    Creates leaves adjacency graph for a fully extended partitioning tree.
+    Leaves adjacency graph for a fully extended partitioning tree.
+
+    Parameters
+    ----------
+    tree : PartitioningTree
+        Corresponding partitioning tree.
+
+    Attributes
+    ----------
+    nodes : list[PartitioningTree]
+        List of all leaves of the initial tree.
+    G : networkx.Graph
+        Adjacency graph of the leaves.
+    
+    Methods
+    ----------
+    frontier : Computes the 2 end points of the frontier between i and j (if they are neighbors).
+    adjacency_matrix : Computes the adjacency matrix of the regions.
+    frontier_matrix : Computes the matrix of all frontiers between regions (both end points if they exist).
     '''
     def __init__(
             self, 
@@ -139,21 +162,7 @@ class PartitioningGraph:
                 if segment is not None:
                     self.G.add_edge(i, j, geometry=segment) # end points of frontier segment stored in G[i][j]['geometry']
     
-    def display(self):
-        plt.figure()
-        pos = nx.spring_layout(self.G)
-        nx.draw(
-            self.G,
-            pos,
-            with_labels=True,
-            node_color='purple',
-            edge_color='grey',
-            node_size=500,
-            font_size=10
-            )
-        plt.title('Leaf Adjacency Graph')
-        plt.show()
-    
+
     def frontier(self, i:int, j:int):
         '''
         Computes the 2 end points of the frontier between i and j (if they are neighbors)
@@ -162,8 +171,22 @@ class PartitioningGraph:
             return self.G[i][j]['geometry']
         return None
     
+    @property
     def adjacency_matrix(self):
         '''
         Computes the adjacency matrix of the regions
         '''
         return nx.to_numpy_array(self.G)
+    
+
+    @property
+    def frontier_matrix(self):
+        '''
+        Computes the matrix of all frontiers between regions (both end points if they exist)
+        '''
+        N = len(self.nodes)
+        matrix = [
+            [self.G[i][j]['geometry'] if self.G.has_edge(i, j) else None 
+            for j in range(N)] 
+            for i in range(N)]
+        return matrix

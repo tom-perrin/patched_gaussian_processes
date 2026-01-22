@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# --------------------------------------------------
+
 def principal_direction(X: np.ndarray) -> np.ndarray:
     '''
     Computes the principal vector (first principal component) of a dataset (without scikit-learn)
@@ -29,6 +31,7 @@ def principal_direction(X: np.ndarray) -> np.ndarray:
 
     return principal_vector
 
+
 class PartitioningTree:
     '''
     Binary tree representing the space partitioning along preferential directions.
@@ -40,6 +43,23 @@ class PartitioningTree:
         Associated initial dataset.
     depth : int
         Amount of times the dataset will be recursively split when using attribute fully_extend().
+
+    Attributes
+    ----------
+    X : Dataset contained in the region.
+    depth : Amount of recursive subdivisions of the region.
+    pdir : Preferential direction v of the dataset X.
+    threshold : Value c of X@v at which the dataset is splitted in 2.
+    left : Partitioning tree corresponding to the region where X@v <= c.
+    right : Partitioning tree corresponding to the region where X@v > c.
+    parent : If it exists, partitioning tree corresponding to the region from which this sub-region originates.
+
+    Methods
+    ----------
+    extend : Splits into two sub partitioning trees. This defines pdir, threshold, left and right.
+    fully_extend : Fully extends the partitioning tree into 2^depth leaves at final layer.
+    get_leaves : Returns the list of leaves (partitioning trees).
+    get_leaves_data : Returns the list of datasets X for each leave.
     '''
     def __init__(
             self,
@@ -59,6 +79,7 @@ class PartitioningTree:
         self.right = right # Sub-dataset X@v > c
         self.parent = parent
     
+
     def extend(self):
         '''
         Splits into two subsets via PCA
@@ -75,6 +96,7 @@ class PartitioningTree:
         self.left = PartitioningTree(self.X[mask], self.depth - 1, parent=self)
         self.right = PartitioningTree(self.X[~mask], self.depth - 1, parent=self)
     
+
     def fully_extend(self):
         '''
         Fully extends the partitioning tree into 2^depth leaves at final layer
@@ -92,6 +114,7 @@ class PartitioningTree:
         if self.right:
             self.right.fully_extend()
     
+
     def get_leaves(self):
         '''
         Returns the list of leaves (partitioning trees)
@@ -99,6 +122,7 @@ class PartitioningTree:
         if self.left is None and self.right is None:
             return [self]
         return self.left.get_leaves() + self.right.get_leaves()
+
 
     def get_leaves_data(self) -> list[np.ndarray]:
         '''

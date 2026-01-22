@@ -1,5 +1,5 @@
 from point_cloud import cloud_from_file
-from display import plot_tree
+from display import plot_tree, plot_tree_graph
 
 from tree_partitioning import PartitioningTree
 from graph_partitioning import PartitioningGraph
@@ -29,7 +29,8 @@ X_data = cloud_from_file(CLOUD_FOLDER+CLOUD_FILE, SEED)
 
 tree = PartitioningTree(X_data, DEPTH)
 tree.fully_extend()
-graph = PartitioningGraph(tree)
 
 # plot_tree(tree)
-graph.display()
+# graph.display()
+
+plot_tree_graph(tree)

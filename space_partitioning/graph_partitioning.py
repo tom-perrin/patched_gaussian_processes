@@ -116,20 +116,20 @@ class PartitioningGraph:
         
         # Creates leaves = nodes from partitioning tree
         leaves = tree.get_leaves()
-        self.graph = nx.Graph()
+        self.G = nx.Graph()
 
         # Finds all neighbors = edges
         for i in range(len(leaves)):
-            self.graph.add_node(i)
+            self.G.add_node(i)
             for j in range(i+1, len(leaves)):
                 if are_neighbors(leaves[i], leaves[j]):
-                    self.graph.add_edge(i,j)
+                    self.G.add_edge(i,j)
     
     def display(self):
         plt.figure()
-        pos = nx.spring_layout(self.graph)
+        pos = nx.spring_layout(self.G)
         nx.draw(
-            self.graph,
+            self.G,
             pos,
             with_labels=True,
             node_color='purple',

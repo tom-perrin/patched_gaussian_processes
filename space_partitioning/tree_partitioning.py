@@ -46,7 +46,8 @@ class PartitioningTree:
 
     Attributes
     ----------
-    X : Dataset contained in the region.
+    X : Dataset of locations.
+    Y : Dataset of values.
     depth : Amount of recursive subdivisions of the region.
     pdir : Preferential direction v of the dataset X.
     threshold : Value c of X@v at which the dataset is splitted in 2.
@@ -65,6 +66,7 @@ class PartitioningTree:
             self,
             X: np.ndarray,
             depth: int,
+            Y = None,
             pdir = None,
             threshold = None,
             left = None,
@@ -72,6 +74,7 @@ class PartitioningTree:
             parent = None
             ):
         self.X = X
+        self.Y = Y
         self.depth = depth
         self.pdir = pdir # Principal vector v
         self.threshold = threshold # Threshold c used to split the dataset via PCA
@@ -93,8 +96,16 @@ class PartitioningTree:
         
         # Splits the data into 2 subgroups (lesser and greater than the threshold)
         mask = projections <= self.threshold
-        self.left = PartitioningTree(self.X[mask], self.depth - 1, parent=self)
-        self.right = PartitioningTree(self.X[~mask], self.depth - 1, parent=self)
+        self.left = PartitioningTree(
+            self.X[mask], 
+            self.depth - 1,
+            Y=self.Y[mask] if self.Y is not None else None,
+            parent=self)
+        self.right = PartitioningTree(
+            self.X[~mask],
+            self.depth - 1,
+            Y=self.Y[~mask] if self.Y is not None else None,
+            parent=self)
     
 
     def fully_extend(self):
@@ -122,13 +133,3 @@ class PartitioningTree:
         if self.left is None and self.right is None:
             return [self]
         return self.left.get_leaves() + self.right.get_leaves()
-
-
-    def get_leaves_data(self) -> list[np.ndarray]:
-        '''
-        Returns the list of datasets X for each leave
-        (Only used to display)
-        '''
-        if self.left is None and self.right is None:
-            return [self.X]
-        return self.left.get_leaves_data() + self.right.get_leaves_data()

@@ -152,12 +152,16 @@ class PartitioningGraph:
         
         # Creates nodes list and empty graph
         self.nodes = tree.get_leaves()
+        self.nodes_X = [leaf.X for leaf in self.nodes]
+        self.nodes_Y = [leaf.Y for leaf in self.nodes]
+
         self.G = nx.Graph()
 
         # Finds all neighbors = edges for each node 
-        for i in range(len(self.nodes)):
+        N = len(self.nodes)
+        for i in range(N):
             self.G.add_node(i)
-            for j in range(i+1, len(self.nodes)):
+            for j in range(i+1, N):
                 segment = get_shared_frontier(self.nodes[i], self.nodes[j])
                 if segment is not None:
                     self.G.add_edge(i, j, geometry=segment) # end points of frontier segment stored in G[i][j]['geometry']
@@ -192,3 +196,10 @@ class PartitioningGraph:
                 for i in range(N)]
             self._cached_f_matrix = matrix
         return self._cached_f_matrix
+    
+
+    def find_location(self, x_star):
+        '''
+        Finds the index of the region where a new location x_star is located
+        '''
+        pass

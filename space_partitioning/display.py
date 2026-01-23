@@ -65,10 +65,9 @@ def plot_tree(tree: PartitioningTree, size=10, alpha=0.7):
     ### --- Left Side : Partitioned Space ---
     ax1.set_title('Partitioned Space')
 
-    leaf_nodes = tree.get_leaves()
-    leaf_data = tree.get_leaves_data()
+    leaves_loc = [leaf.X for leaf in tree.get_leaves()]
 
-    display_groups(leaf_data, ax1)
+    display_groups(leaves_loc, ax1)
     _draw_boundaries(tree, ax1)
     ax1.axis('equal')
     ax1.grid(True, linestyle=':', alpha=0.4)
@@ -101,7 +100,7 @@ def plot_grid(grid: PartitioningGrid, size=10, alpha=0.7):
     
     # --- Left Side : Partitioned Space ---
     ax1.set_title('Partitioned Space')
-    display_groups(grid.nodes, ax1, size=size, alpha=alpha)
+    display_groups(grid.nodes_X, ax1, size=size, alpha=alpha)
 
     # Grid lines
     for i in range(grid.n + 1): 

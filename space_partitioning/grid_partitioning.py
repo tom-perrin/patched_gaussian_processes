@@ -18,7 +18,8 @@ class PartitioningGrid:
 
     Attributes
     ----------
-    X : Dataset.
+    X : Dataset of locations.
+    Y : Dataset of values.
     n : Amount of subdivisions of the x-axis.
     p : Amount of subdivisions of the y-axis.
     x_min, x_max, y_min, y_max : Bounds of the region.
@@ -37,7 +38,8 @@ class PartitioningGrid:
             self,
             X: np.ndarray,
             n_div: int,
-            p_div: int
+            p_div: int,
+            Y = None
             ):
         self.X = X
         self.n = n_div
@@ -50,7 +52,9 @@ class PartitioningGrid:
         self.dy = (self.y_max - self.y_min) / p_div
 
         # Redefines mapping of regions : (i,j) --> j*p_div + i
-        self.nodes = []
+        self.nodes_X = []
+        self.nodes_Y = [] if Y is not None else None
+
         mapping = {}
         counter = 0
         for j in reversed(range(self.p)):
@@ -68,7 +72,9 @@ class PartitioningGrid:
                 mask_x = (X[:, 0] >= x_s) & (X[:, 0] <= x_e if is_last_col else X[:, 0] < x_e)
                 mask_y = (X[:, 1] >= y_s) & (X[:, 1] <= y_e if is_last_row else X[:, 1] < y_e)
                 mask = mask_x & mask_y
-                self.nodes.append(X[mask])
+                self.nodes_X.append(X[mask])
+                if Y is not None:
+                    self.nodes_Y.append(Y[mask])
                 
                 # Create mapping for the graph
                 mapping[(i, j)] = counter
@@ -113,7 +119,7 @@ class PartitioningGrid:
         '''
         Computes the adjacency matrix of the regions
         '''
-        return nx.to_numpy_array(self.G, nodelist=range(len(self.nodes)))
+        return nx.to_numpy_array(self.G, nodelist=range(len(self.nodes_X)))
 
     
     @property
@@ -125,3 +131,10 @@ class PartitioningGrid:
             N = len(self.nodes)
             self._cached_f_matrix = [[self.frontier(i, j) for j in range(N)] for i in range(N)]
         return self._cached_f_matrix
+
+
+    def find_location(self, x_star):
+        '''
+        Finds the index of the region where a new location x_star is located
+        '''
+        pass

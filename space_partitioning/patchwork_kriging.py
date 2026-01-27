@@ -1,11 +1,17 @@
+from typing import Callable
 import numpy as np
-from scipy.linalg import cholesky, solve_triangular
+
+from scipy.linalg import cholesky, solve_triangular, block_diag
 from scipy.spatial.distance import cdist
 
 from graph_partitioning import PartitioningGraph
 from grid_partitioning import PartitioningGrid
 
 # --------------------------------------------------
+def linear_kernel(X, Y): # for testing purposes only
+    X = np.atleast_2d(X)
+    Y = np.atleast_2d(Y)
+    return X @ Y.T
 
 def rbf_kernel(X1, X2, length_scale=1.0, variance=1.0):
     pass
@@ -26,43 +32,46 @@ class PatchworkKriging:
     partitioning : PartitioningGraph | PartitioningTree
         Represents the different regions
     kernel :
-        Covariance function
+        Covariance function (problem is assumed to be stationary)
     B : int
-        Amount of pseudo-points generated at the frontier
+        Amount of pseudo-points generated at each frontier
     '''
     def __init__(self, 
-                 partitioning, 
+                 partitioning: PartitioningGraph, 
                  kernel, 
-                 B=10,
+                 B = 10,
                  noise_std=1e-6,
-                 pseudo_noise=1e-6
+                 pseudo_noise=1e-6  # For numerical stability
                  ):
-        self.partitioning = partitioning
-        self.X = partitioning.nodes_X
-        self.Y = partitioning.nodes_Y
-        self.kernel = kernel
-        self.B = B
-        self.noise = noise_std
-        self.pseudo_noise = pseudo_noise
+        
+        self.partitioning : PartitioningGraph = partitioning
+        self.X : list[np.ndarray] = partitioning.nodes_X
+        self.Y : list[float] = partitioning.nodes_Y
+        self.kernel : Callable = kernel
+        self.B : int = B
+        self.noise : float = noise_std
+        self.pseudo_noise : float = pseudo_noise
 
         # Store frontiers and associated pseudo-points
         self.edges = []
-        self.pseudo_coords = []
+        self.pseudo_coords : list[np.ndarray] = []
         self._generate_pseudo_points()
 
     def _generate_pseudo_points(self):
         f_matrix = self.partitioning.frontier_matrix
         N = len(f_matrix)
+
         for i in range(N):
             for j in range(i+1, N):
                 segment = f_matrix[i][j]
                 if segment is not None:
                     p1, p2 = segment
 
-                    # Linear repartition of pseudo-points along the frontier
-                    t = np.linspace(0.1, 0.9, self.B)
-                    pts = np.array([(1-ti)*p1 + ti*p2 for ti in t])
-                    self.edges.append((i,j))
+                    # Pseudo observations are sampled with a uniform law
+                    t = np.random.uniform(0.1, 0.9, size=self.B)
+                    pts = (1 - t)[:, None] * p1 + t[:, None] * p2 # shape = (B,d)
+
+                    self.edges.append((i, j))
                     self.pseudo_coords.append(pts)
             
             if self.pseudo_coords:
@@ -70,20 +79,25 @@ class PatchworkKriging:
             else:
                 self.all_Z = np.array([]).reshape(0, 2)
 
-
     def precompute(self):
         '''
         Evaluates Q, L and v (cf. Algorithm 1)
         '''
-        n_regions = len(self.X)
-        n_edges = len(self.edges)
-        n_pseudo = n_edges * self.B
+        n_regions = len(self.X)         # K
+        n_edges = len(self.edges)       # non empty edges
+        n_pseudo = n_edges * self.B     #
 
-        # Precompute Cholesky factors for C_kk = K(X_k, X_k) + sigma**2 * Id
+        # Precompute Cholesky factors for C_DD = K(X_k, X_k) + sigma**2 * Id
+        # C_DD is block diagonal, we're computing the blocks. 
         self.L_kk = []
         self.alpha_k = [] # C_kk**-1 * Y_k
+        CDD_blocks = []
+
         for x_k, y_k in zip(self.X, self.Y):
             C_kk = self.kernel(x_k, x_k) + np.eye(len(x_k)) * self.noise**2
+            CDD_blocks.append(C_kk)
+
+
             L_k = cholesky(C_kk, lower=True)
             self.L_kk.append(L_k)
 
@@ -102,7 +116,7 @@ class PatchworkKriging:
                 elif k == j:
                     row_blocks.append(-self.kernel(X_k, Z_edge))
                 else:
-                    row_blocks.append(np.zeros(len(X_k), self.B))
+                    row_blocks.append(np.zeros((len(X_k), self.B)))
             C_D_Delta.append(np.hstack(row_blocks))
         C_D_Delta = np.vstack(C_D_Delta)
 
@@ -143,11 +157,68 @@ class PatchworkKriging:
         invCDD_CD_Delta = np.vstack(invCDD_CD_Delta)
 
         M = C_Delta_Delta - C_D_Delta.T @ invCDD_CD_Delta
-        self.L_M = cholesky(M, lower=True)
 
-    
-    def predict(self, X_star):
+        CDD_inv = np.linalg.inv(block_diag(*CDD_blocks))
+
+        self.Q = CDD_inv + invCDD_CD_Delta @ M @ C_D_Delta.T @ CDD_inv
+
+        L = cholesky(C_Delta_Delta, lower=True)
+        self.L_inv = np.linalg.inv(L)
+
+        self.v = self.L_inv @ C_D_Delta.T
+
+    def predict(self, X_star, region_idx: int):
         '''
         Predicts mean and variance at locations X_star
         ''' 
-        pass
+
+        # Compute of covariance between X_star and observations D and Delta
+        # c_star_Delta
+        covs = []
+        for idx, (i, j) in enumerate(self.edges):
+            obs = self.pseudo_coords[idx]               # (B, d)
+
+            if region_idx == i:
+                # K retourne (1, B)
+                cov = self.kernel(X_star, obs)
+            
+            elif region_idx == j:
+                cov = - self.kernel(X_star, obs)
+
+            else:
+                cov = np.zeros((1, self.B))
+
+            covs.append(cov)
+
+        c_star_Delta = np.hstack(covs) # taille (1, B * L)
+
+        # c_star_D
+        covs = []
+
+        for i, X_i in enumerate(self.X):
+            # X_i : (N_i, d)
+
+            if i == region_idx:
+                # covariance avec les observations du domaine region_idx
+                cov = self.kernel(X_star, X_i)        # (1, N_i)
+            else:
+                # zéros pour les autres domaines (indépendance supposée)
+                cov = np.zeros((1, X_i.shape[0]))
+
+            covs.append(cov)
+
+        c_star_D = np.hstack(covs)
+
+        # c_star_star
+        c_star_star = self.kernel(X_star, X_star)
+
+        # Compute of w_star
+        w_star = self.L_inv @ c_star_Delta.T
+
+        # Expectation and variance
+        mid_term = (c_star_D - w_star.T @ self.v)
+
+        E_star = mid_term @ self.Q @ np.hstack(self.Y)
+        V_star = c_star_star - w_star.T @ w_star - mid_term @ self.Q @ mid_term.T
+
+        return E_star, V_star

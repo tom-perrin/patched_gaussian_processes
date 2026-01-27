@@ -81,6 +81,24 @@ class PartitioningTree:
         self.right = right # Sub-dataset X@v > c
         self.parent = parent
     
+        # --- Bounding box attributes ---
+        self.bb_min = None  # min sur chaque dimension
+        self.bb_max = None  # max sur chaque dimension
+        self._compute_bounding_box()  # calcul automatique à l'initialisation
+
+
+    def _compute_bounding_box(self):
+        '''
+        Computes the bounding box of the current node's dataset X.
+        Stores mins and maxs along each dimension in self.bb_min and self.bb_max.
+        '''
+        if self.X is not None and len(self.X) > 0:
+            self.bb_min = np.min(self.X, axis=0)
+            self.bb_max = np.max(self.X, axis=0)
+        else:
+            self.bb_min = None
+            self.bb_max = None
+
 
     def extend(self):
         '''
@@ -95,11 +113,13 @@ class PartitioningTree:
         
         # Splits the data into 2 subgroups (lesser and greater than the threshold)
         mask = projections <= self.threshold
+
         self.left = PartitioningTree(
             self.X[mask], 
             self.depth - 1,
             Y=self.Y[mask] if self.Y is not None else None,
             parent=self)
+        
         self.right = PartitioningTree(
             self.X[~mask],
             self.depth - 1,

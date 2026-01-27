@@ -13,8 +13,8 @@ from patchwork_kriging import PatchworkKriging, rbf_kernel
 
 CLOUD_FOLDER = "clouds/"
 
-CLOUD_FILE = "gaussian_cloud.json"
-# CLOUD_FILE = "uniform_cloud.json"
+# CLOUD_FILE = "gaussian_cloud.json"
+CLOUD_FILE = "uniform_cloud.json"
 SEED = 67
 DEPTH = 3
 

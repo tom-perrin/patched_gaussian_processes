@@ -26,23 +26,31 @@ def get_constraints(node: PartitioningTree):
 
 def get_clipped_frontier(
         node: PartitioningTree, 
-        padding: float = 10.0,
         external_constraints: list = None
         ):
     '''
-    Computes the 2 end points of the frontier segment of a node's split, clipped by the previous frontiers
+    Computes the 2 end points of the frontier segment of a node's split, clipped by previous frontiers
+    and restricted to the node's bounding box.
     '''
-    if node.pdir is None:
+    if node.pdir is None or node.bb_min is None or node.bb_max is None:
         return None
     
     # Frontier segment equation
     v = node.pdir
     c = node.threshold
     v_orth = np.array([-v[1], v[0]])
-    anchor = v * c # reference point on the segment
+    anchor = v * c  # reference point on the segment
 
-    # Parametrization of the end points of the frontier segment
-    t_min, t_max = -padding, padding
+    # --- Parametrization of the end points using the bounding box ---
+    # Project all 4 corners of the bounding box onto v_orth to find min/max t
+    corners = np.array([
+        [node.bb_min[0], node.bb_min[1]],
+        [node.bb_min[0], node.bb_max[1]],
+        [node.bb_max[0], node.bb_min[1]],
+        [node.bb_max[0], node.bb_max[1]]
+    ])
+    t_values = [(corner - anchor) @ v_orth for corner in corners]
+    t_min, t_max = min(t_values), max(t_values)
 
     # Checks for external constraints already defined
     if external_constraints is not None:
@@ -50,27 +58,25 @@ def get_clipped_frontier(
     else:
         constraints = get_constraints(node)
 
-    # line : L(t) = anchor + t*v_orth
-    # constraints : sign_i * ((anchor + t*v_orth) @ v_i) <= sign_i * c_i
-    #               t * sign_i * v_orth @ v_i <= sign_i * (c_i - anchor @ v_i)
+    # Clip segment based on constraints
     for v_i, c_i, sign_i in constraints:
         dot_orth = v_orth @ v_i
         dot_anchor = anchor @ v_i
 
-        # left hand side, right hand side of inequality
         lhs = sign_i * dot_orth
         rhs = sign_i * (c_i - dot_anchor)
 
-        if abs(lhs) > 1e-9: # checks that line is not vertical
-            val = rhs / lhs # potential new value of t_max / t_min
-            if lhs > 0: # segment potentially clips in the right side
+        if abs(lhs) > 1e-9:  # line is not vertical
+            val = rhs / lhs
+            if lhs > 0:
                 t_max = min(t_max, val)
-            else: # segment potentially clips in the left side
+            else:
                 t_min = max(t_min, val)
     
-    if t_min > t_max: # no frontier
+    if t_min > t_max:  # no frontier
         return None
-    return anchor + t_min * v_orth, anchor + t_max * v_orth # coordinates of the 2 end points
+    return anchor + t_min * v_orth, anchor + t_max * v_orth
+
 
 
 def get_shared_frontier(
@@ -78,16 +84,17 @@ def get_shared_frontier(
         leaf_b: PartitioningTree,
         ):
     '''
-    Computes the 2 end points of the shared frontier between two regions (if it exists)
+    Computes the 2 end points of the shared frontier between two regions (if it exists),
+    ensuring the points lie within the bounding box covering both regions.
     '''
-    # Finds path to leaf_a from tree root
+    # --- Find path to leaf_a from tree root ---
     path_a = []
     curr = leaf_a
     while curr:
         path_a.append(curr)
         curr = curr.parent
 
-    # Finds lowest common ancestor of leaf_a and leaf_b
+    # --- Find lowest common ancestor of leaf_a and leaf_b ---
     lca = None
     curr = leaf_b
     while curr:
@@ -96,19 +103,29 @@ def get_shared_frontier(
             break
         curr = curr.parent
     
-    if lca is None or lca.pdir is None: # no common ancestor
+    if lca is None or lca.pdir is None:  # no common ancestor
         return None
-    
-    # Gets consraints from both leaves and creates associated frontier
+
+    # --- Get constraints from both leaves ---
     combined_constraints = get_constraints(leaf_a) + get_constraints(leaf_b)
     segment = get_clipped_frontier(lca, external_constraints=combined_constraints)
 
-    # Returns end points
-    if segment is not None:
-        p1, p2 = segment
-        if np.linalg.norm(p1 - p2) > 1e-5:
-            return segment
+    if segment is None:
+        return None
+
+    # --- Compute bounding box covering both regions ---
+    bb_min = np.minimum(leaf_a.bb_min, leaf_b.bb_min)
+    bb_max = np.maximum(leaf_a.bb_max, leaf_b.bb_max)
+
+    # --- Clip segment points to stay within bounding box ---
+    p1, p2 = segment
+    p1_clipped = np.minimum(np.maximum(p1, bb_min), bb_max)
+    p2_clipped = np.minimum(np.maximum(p2, bb_min), bb_max)
+
+    if np.linalg.norm(p1_clipped - p2_clipped) > 1e-5:
+        return p1_clipped, p2_clipped
     return None
+
 
 
 def are_neighbors(
@@ -200,6 +217,27 @@ class PartitioningGraph:
 
     def find_location(self, x_star):
         '''
-        Finds the index of the region where a new location x_star is located
+        Finds the index of the region (leaf) where a new point x_star is located.
+        
+        Parameters
+        ----------
+        x_star : array-like
+            Coordinates of the point to locate.
+        
+        Returns
+        -------
+        int or None
+            Index of the leaf containing x_star, or None if not found.
         '''
-        pass
+        x_star = np.asarray(x_star).ravel()  # <-- convert to 1D array
+
+        for idx, leaf in enumerate(self.nodes):
+            constraints = get_constraints(leaf)
+            inside = True
+            for v, c, sign in constraints:
+                if sign * (np.dot(v, x_star) - c) > 1e-9:
+                    inside = False
+                    break
+            if inside:
+                return idx
+        return None

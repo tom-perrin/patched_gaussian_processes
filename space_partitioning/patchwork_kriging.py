@@ -209,6 +209,10 @@ class PatchworkKriging:
         '''
         Predicts mean and variance at locations X_star
         ''' 
+        region_idx = self.partitioning.find_location(X_star)
+
+        if not region_idx:
+            raise Exception(f"Couldn't find region for point {X_star}")
 
         # Compute of covariance between X_star and observations D and Delta
         # c_star_Delta

@@ -1,13 +1,13 @@
 from point_cloud import cloud_from_file
 from display import plot_tree, plot_grid
-from plot3d import plot_field_3d
+from plot3d import plot_field_3d_plotly
 
 from tree_partitioning import PartitioningTree
 from graph_partitioning import PartitioningGraph
 from grid_partitioning import PartitioningGrid
 from simulated_field import analytic_field
 
-from patchwork_kriging import PatchworkKriging, linear_kernel
+from patchwork_kriging import PatchworkKriging, rbf_kernel
 
 # --------------------------------------------------
 
@@ -46,14 +46,15 @@ if __name__ == "__main__":
 
     pk = PatchworkKriging(
         graph,
-        linear_kernel,
-        40
+        rbf_kernel,
+        30,
+        pseudo_noise=1e-3
     )
     
     pk.precompute()
 
     import numpy as np
-    X_pred = np.array([[0, 1.8]])
+    X_pred = np.array([[0.2, 0.8]])
 
     Y_pred, V = pk.predict(X_pred, 1)
 
@@ -68,9 +69,9 @@ if __name__ == "__main__":
 
     # Prédictions
     
-    X, Y = subsample_field(X_data, Y_data, 0.2)
+    X, Y = subsample_field(X_data, Y_data, 0.05)
 
-    plot_field_3d(
+    plot_field_3d_plotly(
         X_data, Y_data,
         X_obs=None, Y_obs=None,
         X_pred=X_pred, Y_pred=Y_pred,

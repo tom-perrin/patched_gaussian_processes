@@ -8,13 +8,25 @@ from graph_partitioning import PartitioningGraph
 from grid_partitioning import PartitioningGrid
 
 # --------------------------------------------------
-def linear_kernel(X, Y): # for testing purposes only
+def linear_kernel(X, Y): 
+    '''
+    For testing purposes only (do not use)
+    ''' 
+    raise Exception("Do not use linear kernel")
     X = np.atleast_2d(X)
     Y = np.atleast_2d(Y)
     return X @ Y.T
 
-def rbf_kernel(X1, X2, length_scale=1.0, variance=1.0):
-    pass
+def rbf_kernel(X, Y, length_scale=1.0, variance=1.0):
+    X = np.atleast_2d(X)
+    Y = np.atleast_2d(Y)
+
+    # ||x - y||^2 = x^2 + y^2 - 2xy
+    X2 = np.sum(X**2, axis=1)[:, None]   # (N, 1)
+    Y2 = np.sum(Y**2, axis=1)[None, :]   # (1, M)
+
+    sqdist = X2 + Y2 - 2 * X @ Y.T
+    return variance * np.exp(-0.5 * sqdist / length_scale**2)
 
 def matern_kernel_32(X1, X2, length_scale=1.0, variance=1.0):
     pass
@@ -74,10 +86,10 @@ class PatchworkKriging:
                     self.edges.append((i, j))
                     self.pseudo_coords.append(pts)
             
-            if self.pseudo_coords:
-                self.all_Z = np.vstack(self.pseudo_coords)
-            else:
-                self.all_Z = np.array([]).reshape(0, 2)
+        if self.pseudo_coords:
+            self.all_Z = np.vstack(self.pseudo_coords)
+        else:
+            self.all_Z = np.array([]).reshape(0, 2)
 
     def precompute(self):
         '''
@@ -122,25 +134,33 @@ class PatchworkKriging:
 
         # Compute C_Delta_Delta : covariance of differences at pseudo-points
         C_Delta_Delta = np.zeros((n_pseudo, n_pseudo))
-        for idx1, (i, j) in enumerate(self.edges):
-            for idx2, (k, l) in enumerate(self.edges):
+        for idx1, (k, l) in enumerate(self.edges):
+            for idx2, (u, v) in enumerate(self.edges):
                 Z1 = self.pseudo_coords[idx1]
                 Z2 = self.pseudo_coords[idx2]
-                K_Z1Z2 = self.kernel(Z1, Z2)
 
-                # Use formula Cov(fi-fj, fk-fl) = K(zi, zk) - K(zi, zl) - K(zj, zk) + K(zj, zl)
-                coeff = 0
-                if i == k:
-                    coeff += 1
-                if i == l:
-                    coeff -= 1
-                if j == k:
-                    coeff -= 1
-                if j == l:
-                    coeff += 1
+                # Use formula (4) of paper. kinda heavy but clear
+                if (
+                    (k == u and l != v) or 
+                    (l == v and k != u)
+                ):
+                    K_Z1Z2 = self.kernel(Z1, Z2)
+                
+                elif (
+                    (k == v and l != u) or 
+                    (l == u and k != v)    
+                ):
+                    K_Z1Z2 = - self.kernel(Z1, Z2)
+                
+                elif k==u and l==v:
+                    K_Z1Z2 = 2 * self.kernel(Z1, Z2)
+                
+                else:
+                    K_Z1Z2 = np.zeros((self.B, self.B))
+
                 
                 start_row, start_col = idx1 * self.B, idx2 * self.B
-                C_Delta_Delta[start_row:start_row+self.B, start_col:start_col+self.B] = coeff * K_Z1Z2
+                C_Delta_Delta[start_row:start_row+self.B, start_col:start_col+self.B] = K_Z1Z2
         
         # Add noise for numerical stability
         C_Delta_Delta += np.eye(n_pseudo) * self.pseudo_noise**2
@@ -160,12 +180,30 @@ class PatchworkKriging:
 
         CDD_inv = np.linalg.inv(block_diag(*CDD_blocks))
 
-        self.Q = CDD_inv + invCDD_CD_Delta @ M @ C_D_Delta.T @ CDD_inv
+        self.Q = np.linalg.inv(
+            block_diag(*CDD_blocks) - C_D_Delta @ np.linalg.inv(C_Delta_Delta) @ C_D_Delta.T
+        )
 
+        # self.Q = CDD_inv + invCDD_CD_Delta @ M @ C_D_Delta.T @ CDD_inv
         L = cholesky(C_Delta_Delta, lower=True)
         self.L_inv = np.linalg.inv(L)
 
         self.v = self.L_inv @ C_D_Delta.T
+
+        
+
+        # M_inv = np.linalg.inv(M)
+
+        # self.Q = (
+        #     CDD_inv
+        #     - CDD_inv @ C_D_Delta @ M_inv @ C_D_Delta.T @ CDD_inv
+        # )
+
+        # L = cholesky(M, lower=True)
+        # self.L_inv = solve_triangular(L, np.eye(L.shape[0]), lower=True)
+
+        # self.v = self.L_inv @ C_D_Delta.T
+
 
     def predict(self, X_star, region_idx: int):
         '''

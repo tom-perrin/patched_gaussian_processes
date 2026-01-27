@@ -1,7 +1,7 @@
 {
     "Type" : "Uniform",
     "Uniform":{
-        "nb_samples" : 800,
+        "nb_samples" : 2000,
         "dimension" : 2
     }
 }

@@ -1,8 +1,7 @@
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+import plotly.graph_objects as go
 
 
-def plot_field_3d(
+def plot_field_3d_plotly(
     X_field, Y_field,
     X_obs=None, Y_obs=None,
     X_pred=None, Y_pred=None,
@@ -19,52 +18,66 @@ def plot_field_3d(
     Y_pred  : (N_pred,) valeurs prédites
     """
 
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection="3d")
+    fig = go.Figure()
 
-    # --- Champ analytique (surface ou nuage dense)
-    surf = ax.plot_trisurf(
-        X_field[:, 0],
-        X_field[:, 1],
-        Y_field,
-        cmap="viridis",
-        alpha=0.6,
-        linewidth=0
-    )
+    # --- Champ analytique (nuage 3D coloré → très fluide)
+    fig.add_trace(go.Scatter3d(
+        x=X_field[:, 0],
+        y=X_field[:, 1],
+        z=Y_field,
+        mode="markers",
+        marker=dict(
+            size=3,
+            color=Y_field,
+            colorscale="Viridis",
+            opacity=0.7,
+            colorbar=dict(title="Champ")
+        ),
+        name="Champ analytique"
+    ))
 
     # --- Observations
     if X_obs is not None and Y_obs is not None:
-        ax.scatter(
-            X_obs[:, 0],
-            X_obs[:, 1],
-            Y_obs,
-            c="red",
-            s=40,
-            label="Observations"
-        )
+        fig.add_trace(go.Scatter3d(
+            x=X_obs[:, 0],
+            y=X_obs[:, 1],
+            z=Y_obs,
+            mode="markers",
+            marker=dict(
+                size=6,
+                color="red"
+            ),
+            name="Observations"
+        ))
 
     # --- Prédictions
     if X_pred is not None and Y_pred is not None:
-        ax.scatter(
-            X_pred[:, 0],
-            X_pred[:, 1],
-            Y_pred,
-            c="black",
-            s=60,
-            marker="x",
-            label="Prédictions"
-        )
+        fig.add_trace(go.Scatter3d(
+            x=X_pred[:, 0],
+            y=X_pred[:, 1],
+            z=Y_pred,
+            mode="markers",
+            marker=dict(
+                size=8,
+                color="black",
+                symbol="x"
+            ),
+            name="Prédictions"
+        ))
 
     # --- Mise en forme
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Valeur du champ")
-    ax.set_title(title)
+    fig.update_layout(
+        title=title,
+        scene=dict(
+            xaxis_title="X",
+            yaxis_title="Y",
+            zaxis_title="Valeur du champ",
+        ),
+        margin=dict(l=0, r=0, b=0, t=40),
+        legend=dict(
+            x=0.02,
+            y=0.98
+        )
+    )
 
-    fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, label="Champ analytique")
-
-    if (X_obs is not None) or (X_pred is not None):
-        ax.legend()
-
-    plt.tight_layout()
-    plt.show()
+    fig.show()

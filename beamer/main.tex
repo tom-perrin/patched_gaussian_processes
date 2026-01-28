@@ -9,6 +9,8 @@
 \usepackage{tikz}
 \usepackage{pifont}
 
+\usepackage{natbib}
+
 \newcommand*\circled[1]{\tikz[baseline=(char.base)]{
             \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
 
@@ -64,6 +66,8 @@
 
 
 \begin{document}
+
+	\nocite{*}	% adds references with citing
 
 	% Equations
 	\setlength{\abovedisplayskip}{0.75ex}
@@ -828,9 +832,9 @@
 	
 	\section*{Appendix}
 	
-	
-	\begin{frame}[allowframebreaks=1]
+	\begin{frame}
 		\frametitle{References}
+		\setlength{\bibitemsep}{1.5em}
 		\bibliographystyle{apalike}      % basic style, author-year citations
 		\bibliography{biblio}
 	\end{frame}

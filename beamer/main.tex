@@ -1,0 +1,843 @@
+
+
+\documentclass[10pt, t,aspectratio=169, usepdftitle=true]{beamer} 
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{pifont}
+
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+\def\withanim{0}
+
+%%-----------------------------------------------------------------------
+%% Preambule: Packages and command definitions
+%%-----------------------------------------------------------------------
+
+
+%% Logos
+\newcommand{\logoHeader}{mines-vert.png}
+\newcommand{\logoTitle}{\vspace{-5em}
+	\includegraphics[width=15em]{mines.png}}
+
+%% Preambule
+\input{preambule.tex}
+
+
+% Grey out items
+\setbeamercovered{still covered={\opaqueness<1->{0}},again covered={\opaqueness<1->{60}}}
+
+
+%%-----------------------------------------------------------------------
+%% Presentation characteristics
+%%-----------------------------------------------------------------------
+
+% Title 
+\title{Patched Gaussian Processes}
+
+
+% Authors
+\author[T. Perrin, L. Roux \& T. Lambert]{\textbf{Tom Perrin, Leo Roux \& Thibault Lambert}}
+
+\institute{Option Géostatistique, Mines Paris - PSL 
+    \vspace{1em}\\
+	\texttt{tom.perrin@etu.minesparis.psl.eu\\
+            leo.roux@etu.minesparis.psl.eu\\
+            thibault.lambert@etu.minesparis.psl.eu}\\
+	\vspace{1em}
+	%{\textit{Joint work with N. Desassis (Mines Paris), A. Lang (Chalmers), L. Clarotto (AgroParisTech)}}
+}
+
+% Event
+%\date{SAMA @ Aussois \\ September 16th, 2024}
+\date{}
+
+
+%%-----------------------------------------------------------------------
+%%----------------------------------------------------------------------
+%%-----------------------------------------------------------------------
+%%----------------------------------------------------------------------
+
+
+\begin{document}
+
+	% Equations
+	\setlength{\abovedisplayskip}{0.75ex}
+	\setlength{\belowdisplayskip}{0.75ex}
+	
+	%%----------------------------------------------------------------------
+	
+	\begin{frame}[plain,c]
+		\titlepage
+	\end{frame}
+	
+	%%----------------------------------------------------------------------
+	
+	
+	
+	%%-------------------------- Outline frame before each section
+	\AtBeginSection[]{
+		\begin{frame}
+			\frametitle{Table of contents}
+			\tableofcontents[currentsection]
+		\end{frame} 
+	}
+	
+	\AtBeginSubsection[]{
+		\begin{frame}
+			\frametitle{Table of contents}
+			\tableofcontents[currentsubsection]
+		\end{frame} 
+	}
+	%%--------------------------
+	
+	
+	
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+
+
+	\section{Prerequisites}
+	
+	\begin{frame}{Gaussian Process}
+		\textbf{Gaussian Process :} Random surface $W(s)$ over a domain $\mathcal{D}$ such that :
+		$$ \forall \{s_1,\dots,s_n\} \in \mathcal{D}^n, W := (W(s_1),\dots,W(s_n)) \sim \mathcal{N}(\mu, C).$$
+
+		\vspace{0.5cm}
+
+		\begin{itemize}
+    			\item \textbf{Mean function :} $\mu(s) := \mathbb{E}[W(s)] \longrightarrow \mu := [\mu(s_1), \dots, \mu(s_N)^T].$
+			 \item \textbf{Covariance function :} $C(s,s') := \mathbb{C}\mathrm{ov}[W(s),W(s')] \longrightarrow C := [C(s_i, s_j)]_{1\leqslant i,j \leqslant N}.$
+		\end{itemize}
+
+		\vspace{1cm}
+
+		\textbf{Law of $\boldsymbol{W}$ :}
+		
+		$$p(W) = \frac{1}{\sqrt{(2\pi)^d\text{det}(C)}}\exp \left(-\frac{1}{2} (W - \mu)^T C ^{-1} (W - \mu) \right).$$
+
+	\end{frame}
+
+	
+	\begin{frame}{Kriging}
+		\textbf{Observations :} $\mathcal{D} = \{(x_i,y_i) \mid i \in \{1,\dots,N\}\}.$
+		\begin{center}
+    			\textbf{Locations $\boldsymbol{x} := [x_1,\dots,x_N]^T$} $\longrightarrow$ \textbf{Responses $\boldsymbol{y} := [y_1,\dots,y_N]^T$}.
+		\end{center}
+
+		\vspace{0.5cm}
+	
+		\textbf{Kriging :} Stochastic predictions based on these observations.
+		\begin{itemize}
+    			\item \textbf{Reponses} $\boldsymbol{y}$ seen as realizations of a \textbf{gaussian process} $\boldsymbol{f}$ with noise :
+    			\begin{center}
+        				$ y_i = f(x_i) + \varepsilon_i,$ where $\varepsilon_i \overset{\text{i.i.d.}}{\sim} \mathcal{N}(0,\sigma^2).$
+			 \end{center}
+			\item \textbf{Prediction} $\boldsymbol{f_* := f(x^*)}$ at new location $x^*$ $\longrightarrow$ \textbf{Joint law of} $\boldsymbol{(f_*,y)}$:
+   			 \begin{center}
+        				$ p(f_*,y) \sim \mathcal{N} \left( 0, 
+       			 	\begin{bmatrix}
+            				c_{**} & c_{x*}^T \\
+            				c_{x*} & \sigma^2I+C_{xx}
+       				 \end{bmatrix} \right).$
+    			\end{center}
+    			\scriptsize where $c_{**} = C(x^*,x^*), c_{x*}=[C(x_1,x^*),\dots,C(x_N,x^*)]^T, C_{xx} = [C(x_i,x_j)]_{1\leqslant i,j \leqslant N}.$
+		\end{itemize}
+   			 
+	\end{frame}
+
+
+	\begin{frame}{Kriging}
+		\textbf{Predictive distribution :}
+    		$$p(f_* \mid y) \sim \mathcal{N}(
+			\underbrace{c_{x*}^T(\sigma^2I+C_{xx})^{-1}y}_{\text{predictive mean}},
+        			\underbrace{c_{**} - c_{x*}^T(\sigma^2I+C_{xx})^{-1}c_{x*}}_{\text{predictive variance}})$$
+
+		\vspace{0.5cm}
+
+		\begin{itemize}
+   			 \item \textbf{Predicted value :} $f_*(x^*) \approx c_{x*}^T(\sigma^2I+C_{xx})^{-1}y.$
+  		 	 \item \textbf{Uncertainty :} $c_{**} - c_{x*}^T(\sigma^2I+C_{xx})^{-1}c_{x*}.$
+		\end{itemize} 
+	\end{frame}
+
+	
+	\begin{frame}{Bayesian Approach}
+		\textbf{Hierarchical model :} 
+		$$y_i = X(x_i) \cdot \beta + f_{\theta}(x_i) + \varepsilon_i.$$
+
+		\vspace{0.5cm}
+
+		\begin{itemize}
+      			 \item \textbf{Regression term $\boldsymbol{X(x_i) \cdot \beta}$ :} Captures effects of known explanatory variables $X$.
+       			 \item \textbf{Spatial effect $\boldsymbol{f_{\theta}(x_i)}$ :} Realization of a gaussian process $f_\theta \sim \mathcal{N}(0, C_\theta).$
+       			 \item \textbf{Noise $\boldsymbol{\varepsilon_i}$ :} $\varepsilon_i \overset{iid}{\sim} \mathcal{N}(0, \tau^2).$
+    		\end{itemize}
+	\end{frame}
+
+	
+	\begin{frame}{Bayesian Approach}
+		\textbf{Bayesian Inference :} Estimation of the \textbf{hidden state} $\boldsymbol{f_\theta}$ and \textbf{parameters} $\boldsymbol{\phi} := \{\beta, \theta, \tau^2\}$.
+		
+		\vspace{0.5cm}
+
+		\begin{itemize}
+			\item \textbf{Prior distributions :} We assume prior knowledge $p(\beta)$, $p(\theta)$ and $p(\tau^2)$.
+			\item \textbf{Likelihood :} $p(y \mid f_\theta, \beta, \tau^2) = \mathcal{N}(X \beta + f_\theta, \tau^2 I).$
+			\item \textbf{Latent GP prior :} $p(f_\theta \mid \theta) = \mathcal{N}(0, C_\theta).$
+		\end{itemize}
+
+		\vspace{1cm}
+
+		\textbf{Joint posterior distribution :}
+		$$p(f_\theta, \beta, \theta, \tau^2 \mid y) \propto \underbrace{p(y \mid f_\theta, \beta, \tau^2)}_{\text{data likelihood}} \times \underbrace{p(f_\theta \mid \theta)}_{\text{spatial link}} \times \underbrace{p(\beta)p(\theta)p(\tau^2)}_{\text{parameter priors}}.$$
+	\end{frame}
+	
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+
+
+\section{The "Big $N$" Problem and Beyond}
+	
+	\begin{frame}{Computational Costs}
+		Both the predictive mean and variance require \textbf{solving linear systems} involving $\Sigma = \sigma^2 I + C_{xx}$.
+
+		\vspace{0.5cm}
+
+		\begin{itemize}
+			\item \textbf{Time complexity :} Matrix inversion $\longrightarrow \boldsymbol{O(N^3)}.$
+			\item \textbf{Space complexity :} Storing covariance matrix $\longrightarrow \boldsymbol{O(N^2)}.$
+		\end{itemize}
+
+		\vspace{1cm}
+
+		\textbf{Solutions :}
+		\begin{itemize}
+			\item Acting on the \textbf{covariance matrix} $\boldsymbol{\Sigma}$ : compact support, covariance tapering, markovian models $\longrightarrow$ \textbf{Sparse matrix}.
+			\item Acting on the \textbf{amount of observations} $\boldsymbol{N}$...
+		\end{itemize}
+	\end{frame}
+
+
+   	 \begin{frame}{Independant Local Kriging}
+		\textbf{Idea :} Split the observations $\mathcal{D}$ into subsets $\mathcal{D}_1,\dots,\mathcal{D}_K$, with $\mathcal{D}_k := \left \{ (x_i, y_i) \mid x_i \in \Omega_k \right \}.$
+		\begin{center}
+			Region $\Omega_k \longrightarrow$ Local gaussian process $f_k \longrightarrow$ Associated covariance function $C_k(\cdot, \cdot)$.
+		\end{center}
+		
+		\vspace{0.5cm}
+
+		\begin{itemize}
+			\item \textbf{Stationary process :} $C_k(\cdot,\cdot) = C(\cdot,\cdot)$.
+			\item Otherwise : Different covariance functions $C_k$.
+		\end{itemize}
+		$$y_{k,i} = f_k(x_i) + \varepsilon_{k,i}.$$
+
+		\vspace{0.5cm}
+
+		Two questions :
+		\begin{itemize}
+			\item How to split the observations efficiently ?
+			\item How to deal with shared boundaries $\Gamma_{k, \ell} := \overline{\Omega}_k \cap \overline{\Omega}_{\ell}$ ?
+		\end{itemize}
+	\end{frame}
+
+
+	\begin{frame}{Splitting the observations}
+		\begin{columns}[T]
+			\column{0.5 \textwidth}
+				\textbf{Grid partitioning :} Splitting the data using an uniform grid to cover the space.
+				\vspace{0.2cm}
+				\begin{itemize}
+					\item[\circled{$+$}] Very easy implementation.
+					\item[\circled{$-$}] High density variance between regions.
+				\end{itemize}
+				
+				\vspace{1cm}				
+
+				\textbf{PCA partitioning :} Splitting the data based on principal component projections values.
+				\vspace{0.2cm}
+				\begin{itemize}
+					\item[\circled{$+$}] Balanced number of points ($N_k \approx \text{cst}$).
+					\item[\circled{$-$}] Complex boundary definition.
+				\end{itemize}
+			\column{0.4 \textwidth}
+         				 \includegraphics[width=0.67\linewidth]{figures/partitioning_grid.png}
+           			 \par\footnotesize \hspace{0.9cm} Grid partitioning\par
+            
+            			\vspace{0.5cm}
+            
+            			\includegraphics[width=0.67\linewidth]{figures/partitioning_pca.png}
+           			\par\footnotesize \hspace{0.9cm} PCA partitioning\par
+
+		\end{columns}
+	\end{frame}
+	
+
+	\begin{frame}{Border discontinuity}
+		\begin{columns}[T]
+			\column{0.4 \textwidth}	
+				\textbf{Issue :}
+				\begin{center}
+					$f_k(x) \neq f_\ell(x)$ at frontier $\Gamma_{k,\ell}.$
+				\end{center}
+				
+				\vspace{0.5cm}
+
+				\textbf{Solution :}
+				\begin{center}
+					Set $\delta_{k,\ell} := f_k - f_\ell = 0$ at $\Gamma_{k,\ell}.$
+				\end{center}
+				
+				\vspace{0.5cm}
+				
+				In practice : pseudo-observations $\delta_{k,\ell}(x) = 0$ at the frontiers. \\
+				\hspace{0.2cm} $\mathbb{E} \left[ f_*^{(k)} \mid y \right] \longrightarrow \mathbb{E} \left[ f_*^{(k)} \mid y, \delta = 0 \right].$ \\
+				\hspace{0.2cm} $\mathbb{V} \left[ f_*^{(k)} \mid y \right] \longrightarrow \mathbb{V} \left[ f_*^{(k)} \mid y, \delta = 0 \right].$
+
+			\column{0.5 \textwidth}
+				\begin{figure}
+					\centering
+					\includegraphics[width=\linewidth]{figures/border_discontinuity.png}
+           				\par\footnotesize Potential discontinuity at frontier \par
+				\end{figure}
+		\end{columns}
+
+	\end{frame}
+
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+	
+	\section{Ideas to Tackle the Issues}
+
+    \subsection{Patchwork Kriging (Park and Aley)}
+	
+	\begin{frame}{Pseudo-observations}
+		For two neighbor regions $\Omega_k, \Omega_\ell$, place $B$ observations on the border $\Gamma_{k,\ell} :$
+		\begin{itemize}
+			\item \textbf{Pseudo-locations :} $x^{(k,\ell)} := \left(x^{(k,\ell)}_1,\dots,x^{(k,\ell)}_B\right)^T.$
+			\item \textbf{Pseudo-values :} $\delta_{k,\ell} := \left(\delta_{k,\ell}(x^{(k,\ell)}_1),\dots,\delta_{k,\ell}(x^{(k,\ell)}_B)\right)^T.$
+		\end{itemize}
+
+		\vspace{0.5cm}
+
+		\begin{itemize}
+			\item[\ding{228}] \textbf{Observations :} $y := \left(y_1^T,\dots,y_K^T\right)^T.$
+			\item[\ding{228}] \textbf{Pseudo-observations :} $\delta := \left(\delta_{1,1}^T,\dots,\delta_{1,K}^T,\dots,\delta_{K,K}^T\right)^T.$
+		\end{itemize}
+	\end{frame}
+
+   	\begin{frame}{Patchwork Kriging}
+		Predict $f_*^{(k)} := f_k(x^*)$ at $x^* \in \Omega_k \longrightarrow$ \textbf{Joint law of} $\boldsymbol{(f_*^{(k)}, y, \delta)} :$
+
+		\vspace{0.5cm}		
+
+		\begin{equation*}
+    			\begin{bmatrix}
+       				f^{(k)}_* \\
+        				y \\
+        				\delta
+			\end{bmatrix} \sim \mathcal{N} \left(
+   			\begin{bmatrix}
+        				0 \\
+        				0 \\
+        				0
+    			\end{bmatrix},
+    			\begin{bmatrix}
+       				c_{**} & c^{(k)}_{*\mathcal{D}} & c^{(k)}_{*\delta} \\
+        				c^{(k)}_{\mathcal{D}*} & C_{\mathcal{D}\mathcal{D}} & C_{\mathcal{D}\delta} \\
+        				c^{(k)}_{\delta*} & C_{\delta\mathcal{D}} & C_{\delta\delta}
+    			\end{bmatrix} \right).
+    		\end{equation*}
+	\end{frame}
+
+	\begin{frame}{Patchwork Kriging}
+		Definitions of the covariance blocks :
+		\small
+		\begin{equation*}
+			\begin{split}
+			c_{**} & := \mathbb{C}\text{ov}(f_*^{(k)}, f_*^{(k)}), \\
+			c_{*\mathcal{D}}^{(k)} & := \left(\mathbb{C}\text{ov}(f_*^{(k)}, y_1),\dots,\mathbb{C}\text{ov}(f_*^{(k)}, y_K) \right), \\ 
+			c_{*\delta}^{(k)} & := \left(\mathbb{C}\text{ov}(f_*^{(k)}, \delta_{1,1}),\dots,\mathbb{C}\text{ov}(f_*^{(k)}, \delta_{K,K}) \right),
+			\end{split}
+		\end{equation*}
+		\begin{equation*}
+			\begin{split}
+			C_{\mathcal{D}\mathcal{D}} & := 
+			\begin{bmatrix}
+				\mathbb{C}\text{ov}(y_1, y_1) & \dots & \mathbb{C}\text{ov}(y_1, y_K) \\
+				\ldots & \ddots & \ldots \\
+				\mathbb{C}\text{ov}(y_K, y_1) & \dots & \mathbb{C}\text{ov}(y_K, y_K)
+			\end{bmatrix}, \hspace{0.2cm}
+			C_{\mathcal{D}\delta} :=
+			\begin{bmatrix}
+				\mathbb{C}\text{ov}(y_1, \delta_{1,1}) & \dots & \mathbb{C}\text{ov}(y_1, \delta_{K,K}) \\
+				\ldots & \ddots & \ldots \\
+				\mathbb{C}\text{ov}(y_K,  \delta_{1,1}) & \dots & \mathbb{C}\text{ov}(y_K,  \delta_{K,K})
+			\end{bmatrix} \hspace{0.2cm} \text{and}  \\
+			C_{\delta\delta} & := 
+			\begin{bmatrix}
+				\mathbb{C}\text{ov}(\delta_{1,1}, \delta_{1,1}) & \dots & \mathbb{C}\text{ov}(\delta_{1,1}, \delta_{K,K}) \\
+				\ldots & \ddots & \ldots \\
+				\mathbb{C}\text{ov}(\delta_{K,K},  \delta_{1,1}) & \dots & \mathbb{C}\text{ov}(\delta_{K,K},  \delta_{K,K})
+			\end{bmatrix}.
+			\end{split}
+		\end{equation*}
+	\end{frame}
+
+  	 \begin{frame}{Patchwork Kriging}
+		\textbf{Predictive mean :} \vspace{0.2cm}
+		$$ \mathbb{E} \left[ f_*^{(k)} \mid y, \delta = 0 \right] = \left( c_{*\mathcal{D}}^{(k)} - c_{*\delta}^{(k)} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right) \left(  C_{\mathcal{D}\mathcal{D}} - C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} y.$$
+
+		\vspace{0.2cm}
+
+		\textbf{Predictive variance :} \vspace{0.2cm}
+		\begin{equation*}
+			\begin{split}
+			\mathbb{V} \left[ f_*^{(k)} \mid y, \delta = 0 \right] = & c_{**} - c_{*\delta}^{(k)}C_{\delta\delta}^{-1}c_{\delta*}^{(k)} \\
+			& - \left( c_{*\mathcal{D}}^{(k)} - c_{*\delta}^{(k)} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right) \left(  C_{\mathcal{D}\mathcal{D}} - C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} \left( c_{\mathcal{D}*}^{(k)} - c_{\delta*}^{(k)} C_{\delta\delta}^{-1} C_{\mathcal{D}\delta} \right) 
+			\end{split}
+		\end{equation*}
+
+		\vspace{0.5cm}
+
+		Noting $Q:=\left(  C_{\mathcal{D}\mathcal{D}} - C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1}, v:=L^{-1}C_{\delta\mathcal{D}}$ and $w_*:=L^{-1}c_{\delta*}^{(k)}$ (where $C_{\delta\delta} = LL^T$),
+
+		\begin{equation*}
+			\begin{split}
+			\mathbb{E} \left[ f_*^{(k)} \mid y, \delta = 0 \right] & = (c_{*\mathcal{D}}^{(k)} - w_*^Tv) Q y.\\
+			\mathbb{V} \left[ f_*^{(k)} \mid y, \delta = 0 \right] & = c_{**} - w_*^T w_* - (c_{*\mathcal{D}}^{(k)} - w_*^Tv) Q (c_{*\mathcal{D}}^{(k)} - w_*^Tv)^T.
+			\end{split}
+		\end{equation*}
+	\end{frame}
+
+	\begin{frame}{Proof}
+		\scriptsize For two gaussian vectors $\bold{x}_1 \sim \mathcal{N}(\mu_1, \Sigma_1)$ and $\bold{x}_2 \sim \mathcal{N}(\mu_2, \Sigma_2)$, the conditional distribution $p(\bold{x}_1 \mid \bold{x}_2)$ is gaussian and verifies :
+		$$
+		\begin{aligned}
+			\mathbb{E} \left[\mathbf{x}_1 \mid \mathbf{x}_2 \right] & = \mu_1 + \Sigma_{12} \Sigma_{22}^{-1} (\bold{x}_2 - \mu_2). \\
+			\mathbb{V} \left[\mathbf{x}_1 \mid \mathbf{x}_2 \right] & = \Sigma_{11} - \Sigma_{12} \Sigma_{22}^{-1} \Sigma_{21}.
+		\end{aligned}
+		$$
+
+		\vspace{0.5cm}
+
+		Applying this to $\mathbf{x}_1 = f_*^{(k)}$ and $\mathbf{x}_2 = (y, \delta)$ gives :
+		$$
+		\mathbb{E}\left[f_*^{(k)} \mid y, \delta \right] = \left[c_{* \mathcal{D}}^{(k)}, c_{*\delta}^{(k)}\right] \left[
+		\begin{array}{ll}
+			C_{\mathcal{D} \mathcal{D}} & C_{\mathcal{D}\delta} \\
+			C_{\delta\mathcal{D}} & C_{\delta\delta}
+		\end{array}\right]^{-1}\left[
+		\begin{array}{l}
+			{y} \\
+			{\delta}
+		\end{array}\right]
+		$$
+		\vspace{0.2cm}
+		and
+		\vspace{0.2cm}
+		$$
+		\mathbb{V}\left[f_*^{(k)} \mid y, \delta \right] = c_{**} - \left[c_{* \mathcal{D}}^{(k)}, c_{*\delta}^{(k)}\right] \left[
+		\begin{array}{ll}
+			C_{\mathcal{D} \mathcal{D}} & C_{\mathcal{D}\delta} \\
+			C_{\delta\mathcal{D}} & C_{\delta\delta}
+		\end{array}\right]^{-1}\left[
+		\begin{array}{l}
+			c_{\mathcal{D}*}^{(k)} \\
+			c_{\delta*}^{(k)}
+		\end{array}\right].
+		$$
+	\end{frame}
+
+	\begin{frame}{Proof}
+		\scriptsize
+		For invertible matrix $A, B, D,$ the following inversion formula holds true :
+		$$
+		\left[
+		\begin{array}{cc}
+			A & B \\
+			B^T & D
+		\end{array}\right]^{-1} = \left[
+		\begin{array}{cc}
+			\left(A-B D^{-1} B^T\right)^{-1} & -\left(A-B D^{-1} B^T\right)^{-1} B D^{-1} \\
+			- D^{-1} B^T\left(A-B D^{-1} B^T\right)^{-1} & \left(D-B^T A^{-1} B\right)^{-1}
+		\end{array}\right].
+		$$
+
+		\vspace{0.5cm}
+
+		Applying this to $A=C_{\mathcal{D}\mathcal{D}}, B=C_{\mathcal{D}\delta}, D=C_{\delta\delta}$ gives, for the predictive mean :
+		$$
+		\begin{aligned}
+			\mathbb{E}\left[f_*^{(k)} \mid y, \delta \right] = &  \left[
+			\begin{array}{l}
+				c_{* \mathcal{D}}^{(k)} \\
+				c_{*\delta}^{(k)}
+			\end{array} \right]^T \left[
+			\begin{array}{cc}
+				 \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} & -\left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} \\
+				- C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} & \left(C_{\delta\delta}-C_{\delta\mathcal{D}} C_{\mathcal{D} \mathcal{D}}^{-1} C_{\mathcal{D} \delta}\right)^{-1}
+			\end{array}\right] \left[
+			\begin{array}{l}
+				{y} \\
+				{\delta}
+			\end{array}\right]
+			\\
+			= & c_{* \mathcal{D}}^{(k)}\left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} y-c_{*\delta}^{(k)} C_{\delta\delta}^{-1} C_{\mathcal{D} \delta}^T\left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} y \\
+			& - c_{* \mathcal{D}}^{(k)}\left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} \delta+c_{* \delta}^{(k)}\left(C_{\delta\delta}-C_{\delta\mathcal{D}} C_{\mathcal{D} \mathcal{D}}^{-1} C_{\mathcal{D} \delta}\right)^{-1} \delta.
+		\end{aligned}
+		$$
+
+		\vspace{0.5cm}
+
+		Taking $\delta = 0$ finally leads to : $$ \mathbb{E} \left[ f_*^{(k)} \mid y, \delta = 0 \right] = \left( c_{*\mathcal{D}}^{(k)} - c_{*\delta}^{(k)} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right) \left(  C_{\mathcal{D}\mathcal{D}} - C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} y.$$
+	\end{frame}
+
+	\begin{frame}{Proof}
+		\scriptsize
+		Concerning the predictive variance, the inversion formula also gives :
+		\vspace{0.2cm}
+		\begin{equation*}
+			\begin{aligned}
+			& \hspace{0.1cm} \mathbb{V}\left[f_*^{(k)} \mid y, \delta \right] \\
+			= & \hspace{0.1cm}  c_{**} - \left[
+			\begin{array}{l}
+				c_{* \mathcal{D}}^{(k)} \\
+				c_{*\delta}^{(k)}
+			\end{array} \right]^T \left[
+			\begin{array}{cc}
+				 \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} & -\left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} \\
+				- C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} & \left(C_{\delta\delta}-C_{\delta\mathcal{D}} C_{\mathcal{D} \mathcal{D}}^{-1} C_{\mathcal{D} \delta}\right)^{-1}
+			\end{array}\right] \left[
+			\begin{array}{l}
+				c_{\mathcal{D}*}^{(k)} \\
+				c_{\delta*}^{(k)}
+			\end{array}\right] \\
+			= & \hspace{0.1cm} c_{**} - c_{*\mathcal{D}}^{(k)} \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} c_{\mathcal{D}*}^{(k)} + c_{*\mathcal{D}}^{(k)} \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} c_{\delta*}^{(k)} \\
+			& \hspace{0.1cm} + c_{*\delta}^{(k)} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}}  \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} c_{\mathcal{D}*}^{(k)} - c_{*\delta}^{(k)} \left( C_{\delta\delta} - C_{\delta\mathcal{D}} C_{\mathcal{D}\mathcal{D}}^{-1} C_{\mathcal{D}\delta} \right)^{-1} c_{\delta*}^{(k)}.
+			\end{aligned}
+		\end{equation*}
+
+		\vspace{0.5cm}
+
+		This finally yields to :
+
+		$$
+		\mathbb{V}\left[f_*^{(k)} \mid y, \delta = 0 \right] = c_{**} - c_{*\delta}^{(k)} C_{\delta\delta}^{-1} c_{\delta*}^{(k)} - \left( c_{*\mathcal{D}}^{(k)} - c_{*\delta}^{(k)} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right) \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} \left( c_{\mathcal{D}*}^{(k)} - C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} c_{\delta*}^{(k)} \right).
+		$$
+	\end{frame}
+
+	%%----------------------------------------------------------------------
+
+    \subsection{Nearest-Neighbors Gaussian Processes (Datta et al.)}
+	
+	\begin{frame}{Intuitive Idea}
+		idk
+	\end{frame}
+
+  	 \begin{frame}{Theoretical Definition}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+   	\begin{frame}{Proper Solution}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+	
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+	
+	\section{Performance Comparison and Conclusion}
+	
+	\begin{frame}{Title}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}	
+
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+	\appendix
+	
+	\section*{Appendix}
+	
+	
+	\begin{frame}[allowframebreaks=1]
+		\frametitle{References}
+		\bibliographystyle{apalike}      % basic style, author-year citations
+		\bibliography{biblio}
+	\end{frame}
+	%
+	%
+	
+	
+
+	
+\end{document}
+
+\documentclass[10pt, t,aspectratio=169, usepdftitle=true]{beamer} 
+
+
+\def\withanim{0}
+
+%%-----------------------------------------------------------------------
+%% Preambule: Packages and command definitions
+%%-----------------------------------------------------------------------
+
+
+%% Logos
+\newcommand{\logoHeader}{mines-vert.png}
+\newcommand{\logoTitle}{\vspace{-5em}
+	\includegraphics[width=15em]{mines.png}}
+
+%% Preambule
+\input{preambule.tex}
+
+
+% Grey out items
+\setbeamercovered{still covered={\opaqueness<1->{0}},again covered={\opaqueness<1->{60}}}
+
+
+%%-----------------------------------------------------------------------
+%% Presentation characteristics
+%%-----------------------------------------------------------------------
+
+% Title 
+\title{Patched Gaussian Processes}
+
+
+% Authors
+\author[T. Perrin, L. Roux \& T. Lambert]{\textbf{Tom Perrin, Leo Roux \& Thibault Lambert}}
+
+\institute{Option Géostatistique, Mines Paris - PSL 
+    \vspace{1em}\\
+	\texttt{tom.perrin@etu.minesparis.psl.eu\\
+            leo.roux@etu.minesparis.psl.eu\\
+            thibault.lambert@etu.minesparis.psl.eu}\\
+	\vspace{1em}
+	%{\textit{Joint work with N. Desassis (Mines Paris), A. Lang (Chalmers), L. Clarotto (AgroParisTech)}}
+}
+
+% Event
+%\date{SAMA @ Aussois \\ September 16th, 2024}
+\date{}
+
+
+%%-----------------------------------------------------------------------
+%%----------------------------------------------------------------------
+%%-----------------------------------------------------------------------
+%%----------------------------------------------------------------------
+
+
+\begin{document}
+	
+	% Equations
+	\setlength{\abovedisplayskip}{0.75ex}
+	\setlength{\belowdisplayskip}{0.75ex}
+	
+	%%----------------------------------------------------------------------
+	
+	\begin{frame}[plain,c]
+		\titlepage
+	\end{frame}
+	
+	%%----------------------------------------------------------------------
+	
+	
+	
+	%%-------------------------- Outline frame before each section
+	\AtBeginSection[]{
+		\begin{frame}
+			\frametitle{Table of contents}
+			\tableofcontents[currentsection]
+		\end{frame} 
+	}
+	
+	\AtBeginSubsection[]{
+		\begin{frame}
+			\frametitle{Table of contents}
+			\tableofcontents[currentsubsection]
+		\end{frame} 
+	}
+	%%--------------------------
+	
+	
+	
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+
+
+	\section{Prerequisites}
+	
+	\begin{frame}{Title}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+    \subsection{Gaussian Process}
+	
+	\begin{frame}{Gaussian Process}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+
+    \subsection{Kriging}
+	
+	\begin{frame}{Kriging}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+
+    \subsection{Bayesian Approach}
+	
+	\begin{frame}{Bayesian Approach}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+	
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+
+
+	\section{The "Big $N$" Problem and Beyond}
+	
+	\subsection{Computational Costs}
+	
+	\begin{frame}{Computational Costs}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+
+    \subsection{The Discontinuity Problem}
+	
+	\begin{frame}{First Patchwork Idea}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+    \begin{frame}{Independant Local Kriging}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+	
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+	
+	\section{Ideas to Tackle the Issues}
+
+    \subsection{Patchwork Kriging (Park \& Aley)}
+	
+	\begin{frame}{Intuitive Idea}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+    \begin{frame}{Theoretical Definition}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+    \begin{frame}{Proper Solution}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+
+    \subsection{Nearest-Neighbors Gaussian Processes (Datta et al.)}
+	
+	\begin{frame}{Intuitive Idea}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+    \begin{frame}{Theoretical Definition}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+
+    \begin{frame}{Proper Solution}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}
+	
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+	
+	\section{Performance Comparison and Conclusion}
+	
+	\begin{frame}{Title}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}	
+
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+	\appendix
+	
+	\section*{Appendix}
+	
+	
+	\begin{frame}[allowframebreaks=1]
+		\frametitle{References}
+		\bibliographystyle{apalike}      % basic style, author-year citations
+		\bibliography{biblio}
+	\end{frame}
+	%
+	%
+	
+	
+
+	
+\end{document}

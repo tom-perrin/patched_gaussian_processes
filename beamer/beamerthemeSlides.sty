@@ -1,0 +1,291 @@
+%\ProvidesPackageRCS $Header: /cvsroot/latex-beamer/latex-beamer/themes/theme/beamerthemeSlides.sty,v 1.0 24/02/2017 12:05:39 G.FALLOURD-M.LEBRETON Exp $
+\mode<presentation>
+
+\RequirePackage{tikz}      
+% Frame margins
+%\setbeamersize{text margin left=0.03\paperwidth,text margin right=0.03\paperwidth}
+\geometry{tmargin=0.00\paperheight,left=0.04\paperwidth,right=0.04\paperwidth}
+
+
+%%-----------------------------------------------------------------------
+
+%% Colors
+\definecolor{topCol}{RGB}{26,100,145}
+\definecolor{bottomCol}{RGB}{26,100,145}
+
+
+%\definecolor{white}{RGB}{255,255,255}
+\definecolor{myblue}{RGB}{0,68,108}
+\definecolor{mygrey}{RGB}{100,100,100}
+
+
+%% Colors frame titles
+\colorlet{titleBgCol}{white}
+\colorlet{titleTxtCol}{myblue}
+\colorlet{subtitleBgCol}{white}
+\colorlet{subtitleTxtCol}{black}
+
+%% Color footer
+\colorlet{footBgCol}{white}
+\colorlet{footTxtCol}{myblue}
+
+\colorlet{sectionColor}{topCol}
+\definecolor{sectionTextColor}{RGB}{255,255,255}
+\colorlet{subsectionColor}{topCol}
+\definecolor{subsectionTextColor}{RGB}{255,255,255}
+
+\colorlet{bodyColor}{white}
+
+\colorlet{normalTextColor}{black}
+
+\definecolor{exampleTextColor}{RGB}{51,153,51}
+\definecolor{alertTextColor}{RGB}{204,51,51}
+
+\colorlet{chipColor}{topCol}
+\definecolor{chipTextColor}{RGB}{255,255,255}
+
+\definecolor{normalBlockColor}{RGB}{230,245,255}
+\definecolor{normalTitleBlockColor}{RGB}{70,120,170}
+\definecolor{normalBlockTextColor}{RGB}{0,0,0}
+\definecolor{normalBlockTitleTextColor}{RGB}{255,255,255}
+
+\definecolor{exampleBlockColor}{RGB}{245,255,225}
+\definecolor{exampleTitleBlockColor}{RGB}{112,152,107}
+\definecolor{exampleBlockTextColor}{RGB}{0,0,0}
+\definecolor{exampleBlockTitleTextColor}{RGB}{255,255,255}
+
+\definecolor{alertBlockColor}{RGB}{255,230,200}
+\definecolor{alertTitleBlockColor}{RGB}{205,92,92}
+\definecolor{alertBlockTextColor}{RGB}{0,0,0}
+\definecolor{alertBlockTitleTextColor}{RGB}{255,255,255}
+
+
+\setbeamercolor{section in head/foot}{bg=sectionColor, fg=sectionTextColor}
+\setbeamercolor{subsection in head/foot}{bg=subsectionColor, fg=subsectionTextColor}
+\setbeamercolor*{block title}{fg=normalBlockTitleTextColor,bg=normalTitleBlockColor}
+\setbeamercolor*{block body}{fg=normalBlockTextColor,bg=normalBlockColor}
+\setbeamercolor*{block title alerted}{fg=alertBlockTitleTextColor,bg=alertTitleBlockColor}
+\setbeamercolor*{block body alerted}{fg=alertBlockTextColor,bg=alertBlockColor}
+\setbeamercolor*{block title example}{fg=exampleBlockTitleTextColor,bg=exampleTitleBlockColor}
+\setbeamercolor*{block body example}{fg=exampleBlockTextColor,bg=exampleBlockColor}
+\setbeamerfont{block title}{size={}}
+
+
+\setbeamercolor*{normal text}{fg=normalTextColor,bg=bodyColor}
+\setbeamercolor*{example text}{fg=exampleTextColor}
+\setbeamercolor*{alerted text}{fg=alertTextColor}
+\useinnertheme{rectangles}
+\setbeamercolor{item projected}{bg=chipColor,fg=chipTextColor}
+\setbeamercolor*{sidebar}{bg=sectionColor, fg=sectionTextColor}
+\setbeamercolor*{palette sidebar primary}{bg=subsectionColor,fg=subsectionTextColor}
+\setbeamercolor*{palette sidebar secondary}{bg=sectionColor,fg=sectionTextColor}
+
+
+%%-----------------------------------------------------------------------
+
+\newdimen\beamer@sidebarwidth
+\newdimen\beamer@headheight
+
+%% Dimensions of sidebar
+\beamer@sidebarwidth=10pt
+\beamer@headheight=2.5\baselineskip
+
+\reset@font
+\def\beamer@lefttext{left}
+\DeclareOptionBeamer{hideothersubsections}[]{\beamer@nav@subsectionstyle{show/show/hide}}
+\DeclareOptionBeamer{hideallsubsections}[]{\beamer@nav@subsectionstyle{hide}}
+\DeclareOptionBeamer{width}{\beamer@sidebarwidth=#1}
+\DeclareOptionBeamer{height}{\beamer@headheight=#1}
+\DeclareOptionBeamer{left}{\def\beamer@sidebarside{left}}
+\DeclareOptionBeamer{right}{\def\beamer@sidebarside{right}}
+\ExecuteOptionsBeamer{left}
+\ProcessOptionsBeamer
+
+
+
+%%-----------------------------------------------------------------------
+
+%% Frame titles
+\setbeamercolor{titleColLayout}{bg=titleTxtCol,fg=titleBgCol}
+\setbeamercolor{subtitleColLayout}{fg=subtitleTxtCol,bg=subtitleBgCol}
+
+
+\defbeamertemplate*{frametitle}{sidebar theme}{%
+
+\begin{tcolorbox}[spread sidewards,height=0.15\paperheight,arc=0pt,colback=titleBgCol,coltext=titleTxtCol,colframe=titleBgCol,
+coltitle=titleBgCol,toprule=0pt,leftrule=0pt,rightrule=0pt,bottomrule=0pt,halign=left,
+,valign=center,left=5pt,right=0.05\paperwidth,boxsep=5pt,before skip=0pt,after skip=-1.5ex]
+%\textbf{\large\MakeUppercase\insertframetitle}
+\normalsize{$\blacksquare$}\hspace{5pt}\textbf{\large\expandafter\uppercase\expandafter\insertframetitle}
+%\textbf{\Large\insertframetitle}
+\end{tcolorbox}%
+%\begin{tcolorbox}[width=0.08\textwidth,colback=white,size=minimal,nobeforeafter]
+%\centering
+%\vspace{-2pt}
+%\includegraphics[width=\textwidth]{logo_ch_gu.pdf}
+%\end{tcolorbox}
+
+\begin{tikzpicture}[remember picture,overlay]
+	\node[anchor=north east,xshift=-0.000\paperwidth,yshift=0.00\paperheight] at (current page.north east) {\includegraphics[height=0.075\paperheight]{\logoHeader}};
+\end{tikzpicture}
+
+}
+
+%%-----------------------------------------------------------------------
+
+
+
+
+%%-----------------------------------------------------------------------
+
+% Footer
+
+\setbeamercolor{footColLayout}{bg=footBgCol, fg=footTxtCol}
+
+\defbeamertemplate*{footline}{split theme}
+{
+\leavevmode%
+%\begin{tcolorbox}[width=\paperwidth,opacityfill=0,size=minimal,colback=footBgCol,coltext=footTxtCol,valign=center,halign=center,fontupper=\footnotesize]
+%%\centering
+%\insertshorttitle
+%\end{tcolorbox}
+%\vspace{-1ex}
+\begin{tcbraster}[raster columns=22,raster width=\paperwidth]
+\begin{tcolorbox}[width=0.1\paperwidth,opacityfill=0,size=minimal,colback=footBgCol,coltext=footTxtCol,valign=center,fontupper=\footnotesize]
+%%
+	\end{tcolorbox}
+\begin{tcolorbox}[width=0.9\paperwidth,opacityfill=0,size=minimal,colback=footBgCol,coltext=footTxtCol,valign=center,fontupper=\footnotesize,raster multicolumn=20]
+	\centering
+	\insertshorttitle
+\end{tcolorbox}%
+\begin{tcolorbox}[width=0.1\paperwidth,opacityfill=1,size=minimal,colback=myblue,coltext=white,valign=center,fontupper=\footnotesize]
+\centering
+\vspace{1pt}
+\textbf{\insertframenumber}\\
+\vspace{1pt}
+\end{tcolorbox}
+\end{tcbraster}
+%\leavevmode%
+%\begin{beamercolorbox}[wd=\paperwidth,ht=3.5ex,dp=0.5ex]{footColLayout}
+%\footnotesize{\insertshorttitle\hfill}
+%\end{beamercolorbox}
+%\begin{beamercolorbox}[wd=0.25\paperwidth,ht=3.5ex,dp=1ex,leftskip=1em]{footColLayout}%
+%%\normalsize{\insertshortauthor} 
+%\end{beamercolorbox}%
+%\begin{beamercolorbox}[wd=0.5\paperwidth,ht=3.5ex,dp=1ex,center]{footColLayout}%
+%\footnotesize\textbf{\insertframenumber} 
+%\end{beamercolorbox}%
+%\begin{beamercolorbox}[wd=0.25\paperwidth,ht=3.5ex,dp=1ex,leftskip=1em]{footColLayout}%
+%\end{beamercolorbox}%
+}
+
+%%-----------------------------------------------------------------------
+
+%% Title page
+
+\makeatletter
+\def\beamer@andinst{\\[0.2em]}
+\makeatother
+
+% Title page
+\defbeamertemplate*{title page}{customized}[1][]
+{
+
+\vspace{2em}
+\begin{tcolorbox}[boxrule=0pt,arc=0pt,colback=myblue,coltext=white,valign=center,fontupper=\bf\LARGE]
+\centering
+\inserttitle
+\end{tcolorbox}
+
+
+\vspace{1em}
+\begin{tcolorbox}[size=minimal,colback=white,coltext=black,fontupper=\large]
+\centering
+\insertauthor
+\end{tcolorbox}
+
+
+
+\begin{tcolorbox}[size=minimal,colback=white,coltext=black,fontupper=\normalsize]
+\centering
+\insertinstitute
+\end{tcolorbox}
+
+
+\vspace{1.25em}
+\begin{tcolorbox}[size=minimal,colback=white,coltext=myblue,fontupper=\bfseries\large]
+\centering
+{\insertdate}
+\end{tcolorbox}
+
+
+\vspace{0.5em}
+\begin{center}
+	%\includegraphics[height=0.225\paperheight]{\logoTitle}
+	\logoTitle
+\end{center}
+}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Enumeration style
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{itemize items}{\raisebox{0.4ex}{\rule{.75ex}{.75ex}}}
+\setbeamertemplate{itemize subitem}{$-$}
+\setbeamercolor{item}{fg=black}
+\setbeamercolor{itemize subitem}{fg=black}
+\setbeamertemplate{itemize/enumerate subbody begin}{\normalsize}
+
+%\definecolor{redBlockColor}{RGB}{255,230,200}
+\definecolor{redBlockColor}{RGB}{255, 231, 227}
+\definecolor{redTitleBlockColor}{RGB}{205,92,92}
+\newenvironment<>{redblock}[1]
+{\begin{tcolorbox}[spread sidewards,title=#1,arc=0pt,colback=redBlockColor,colbacktitle=redTitleBlockColor,boxrule=0pt,coltext=black,coltitle=white]}
+{\end{tcolorbox}}
+
+\newenvironment<>{redblock*}[1]
+{\begin{tcolorbox}[title=#1,arc=0pt,halign=flush center,colback=redBlockColor,colbacktitle=redTitleBlockColor,boxrule=0pt,coltext=black,coltitle=white]}
+{\end{tcolorbox}}
+
+
+\definecolor{blueBlockColor}{RGB}{230,245,255}
+\definecolor{blueTitleBlockColor}{RGB}{70,120,170}
+\newenvironment<>{blueblock}[1]
+{\begin{tcolorbox}[spread sidewards,title=#1,arc=0pt,colback=blueBlockColor,colbacktitle=blueTitleBlockColor,boxrule=0pt,coltext=black,coltitle=white]}
+{\end{tcolorbox}}
+
+\newenvironment<>{blueblock*}[1]
+{\begin{tcolorbox}[title=#1,arc=0pt,colback=blueBlockColor,colbacktitle=blueTitleBlockColor,boxrule=0pt,coltext=black,coltitle=white]}
+{\end{tcolorbox}}
+
+
+%\definecolor{greenBlockColor}{RGB}{245,255,225}
+\definecolor{greenBlockColor}{RGB}{217,252,189}
+\definecolor{greenTitleBlockColor}{RGB}{112,152,107}
+\newenvironment<>{greenblock}[1]
+{\begin{tcolorbox}[spread sidewards,title=#1,arc=0pt,colback=greenBlockColor,colbacktitle=greenTitleBlockColor,boxrule=0pt,coltext=black,coltitle=white]}
+{\end{tcolorbox}}
+
+\newenvironment<>{greenblock*}[1]
+{\begin{tcolorbox}[title=#1,arc=0pt,colback=greenBlockColor,colbacktitle=greenTitleBlockColor,boxrule=0pt,coltext=black,coltitle=white]}
+{\end{tcolorbox}}
+
+
+
+\definecolor{greyBlockColor}{RGB}{220,220,220}
+\definecolor{greyTitleBlockColor}{RGB}{70,70,70}
+\newenvironment<>{greyblock}[1]
+{\begin{tcolorbox}[spread sidewards,title=#1,arc=0pt,colback=greyBlockColor,colbacktitle=greyTitleBlockColor,boxrule=0pt,coltext=black,coltitle=white]}
+{\end{tcolorbox}}
+
+
+%% Table of Contents
+\setbeamertemplate{section in toc}{\hspace{0.05\textwidth}\large{\textcolor{myblue}{\textbf{\uppercase\expandafter{\romannumeral\inserttocsectionnumber}.}~\inserttocsection}}}
+
+\setbeamertemplate{subsection in toc}{\hspace{0.1\textwidth}\large{\textcolor{myblue}{\uppercase\expandafter{\romannumeral\inserttocsectionnumber}.\inserttocsubsectionnumber~\inserttocsubsection}}\\}
+
+\mode
+<all>

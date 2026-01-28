@@ -1,0 +1,194 @@
+
+
+
+%%-----------------------------------------------------------------------
+%% Preambule: Packages and command definitions
+%%-----------------------------------------------------------------------
+\usefonttheme[onlymath]{serif}
+\usetheme{Slides} 
+\setbeamertemplate{navigation symbols}{} 
+
+
+
+%%-----------------------------------------------------------------------
+%% Packages
+%%-----------------------------------------------------------------------
+
+
+% Encoding
+\usepackage[english]{babel}
+\usepackage{amsmath,amsfonts,mathrsfs,bm,mathtools}
+\usepackage{amssymb,eucal,dsfont}
+
+% Multi-columns/rows
+\usepackage{multicol,multirow,makecell}
+
+% Bibliography
+\usepackage{natbib}
+
+% Adjustment boxes
+\usepackage{adjustbox}
+
+% To place text boxes
+\usepackage[absolute,overlay]{textpos}
+\usepackage[most]{tcolorbox}
+
+
+\usepackage{graphicx,amssymb,amscd,mathdots}
+
+\usepackage{enumerate}
+
+% Hyperlinks
+\usepackage{hyperref}
+% Subfigures
+\usepackage{subcaption}
+
+
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\def\arraystretch{1.5}
+
+
+% Center captions
+\usepackage[justification=centering,skip=0.75ex,size=footnotesize]{caption}
+\definecolor{colCaption}{gray}{0.25}
+\captionsetup{textfont={color=colCaption}}
+\captionsetup[figure]{labelformat=empty}
+
+%\usepackage{verbatim}
+% For animations
+\usepackage{pdfpc-commands}
+
+% For different numbering in appendix
+% \usepackage{appendixnumberbeamer}
+
+% TikZ
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes, decorations.pathreplacing}
+
+% Deal with spacing in commands
+\usepackage{xspace}
+
+
+% Color boxes
+\usepackage{framed, tcolorbox}
+\tcbset{colframe = white}
+\tcbuselibrary{listings,breakable}
+
+\usepackage{pdfpages}
+
+%%-----------------------------------------------------------------------
+%% Commands
+%%-----------------------------------------------------------------------
+
+% Operators
+%\newcommand{\tr}[1]{#1^{T}}
+\newcommand{\tr}[1]{{}^t{#1}}
+\newcommand{\diag}{\mathrm{diag}}
+\newcommand{\Diag}{\mathrm{Diag}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\ft}{\mathscr{F}}
+\newcommand{\cont}{\mathscr{C}}
+\newcommand{\neig}{\mathrm{ne}}
+\newcommand{\spn}[1]{\mathrm{span}\left\lbrace #1 \right\rbrace}
+
+
+%% Random variables
+\newcommand{\proba}[1]{\mathbb{P}\left[#1\right]}
+\newcommand{\e}{\mathbb{E}}
+\newcommand{\cov}{\mathrm{Cov}}
+\newcommand{\var}{\mathrm{Var}}
+
+%% Sets of numbers
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+
+% Quotation marks
+\newcommand{\q}[1]{``#1''}
+
+% Text in color
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\tc}[2]{\textcolor{#1}{#2}}
+
+% Sets of integres
+\newcommand{\bi}{[\![}
+\newcommand{\ei}{]\!]}
+
+% Display stile in inline equation
+\newcommand{\ds}{\displaystyle}
+
+% Additional commands
+\newcommand{\dv}{\mathrm{div}}
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\K}{\mathrm{K}}
+\newcommand{\sk}{\mathrm{SK}}
+\newcommand{\mk}{\mathrm{MK}}
+\newcommand{\ok}{\mathrm{OK}}
+\newcommand{\fk}{\mathrm{FK}}
+\newcommand{\ck}{\mathrm{CoK}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cZ}{\mathcal{Z}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\tp}[1]{{{}^t{#1}}}
+
+
+
+%%-----------------------------------------------------------------------
+%% Environments
+%%-----------------------------------------------------------------------
+
+
+% Center without space
+\newenvironment{nscenter}
+{\parskip=0pt\par\nopagebreak\centering}
+{\par\noindent\ignorespacesafterend}
+
+% Algorithms
+\newenvironment<>{alg}[1]{
+	\begin{nscenter}
+		\begin{minipage}{\linewidth}
+			\begin{mdframed}[backgroundcolor=mygreylight,linewidth=0pt]
+				\begin{algorithm}[H]}{
+				\end{algorithm}
+			\end{mdframed}
+		\end{minipage}
+	\end{nscenter}
+}
+
+		
+\renewenvironment<>{greyblock}[1]
+{\begin{tcolorbox}[title=#1,arc=0pt,colback=greyBlockColor,colbacktitle=greyTitleBlockColor,boxrule=0pt,coltext=black,coltitle=white]}
+	{\end{tcolorbox}}
+
+
+
+%%-----------------------------------------------------------------------
+%% Other
+%%-----------------------------------------------------------------------
+
+% Add space between items in itemize
+\let\OLDitemize\itemize
+\renewcommand\itemize{\OLDitemize\addtolength{\itemsep}{0.5em}}
+
+
+% Define colors
+\definecolor{c1}{RGB}{56, 103, 161}
+\definecolor{c2}{RGB}{245, 87, 66}
+\definecolor{c3}{RGB}{245, 87, 66}
+\definecolor{c4}{RGB}{60, 138, 51}
+\definecolor{c5}{RGB}{0, 0, 0}
+\definecolor{mygreen}{RGB}{63,92,44}
+
+
+\def\boxitem#1{\vspace{0pt}\setbox0=\vbox{#1}{\centering\makebox[0pt]{%
+			\fboxrule=2pt\color{gray}\fbox{\hspace{\leftmargini}\color{black}\box0}}\vspace{3ex}\par}}
+
+
+

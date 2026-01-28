@@ -115,7 +115,7 @@
 		\vspace{0.5cm}
 
 		\begin{itemize}
-    			\item \textbf{Mean function :} $\mu(s) := \mathbb{E}[W(s)] \longrightarrow \mu := [\mu(s_1), \dots, \mu(s_N)^T].$
+    			\item \textbf{Mean function :} $\mu(s) := \mathbb{E}[W(s)] \longrightarrow \mu := [\mu(s_1), \dots, \mu(s_N)]^T$
 			 \item \textbf{Covariance function :} $C(s,s') := \mathbb{C}\mathrm{ov}[W(s),W(s')] \longrightarrow C := [C(s_i, s_j)]_{1\leqslant i,j \leqslant N}.$
 		\end{itemize}
 
@@ -146,7 +146,7 @@
    			 \begin{center}
         				$ p(f_*,y) \sim \mathcal{N} \left( 0, 
        			 	\begin{bmatrix}
-            				c_{**} & c_{x*}^T \\
+            				c_{**} & c_{*x} \\
             				c_{x*} & \sigma^2I+C_{xx}
        				 \end{bmatrix} \right).$
     			\end{center}
@@ -215,8 +215,8 @@
 		\vspace{0.5cm}
 
 		\begin{itemize}
-			\item \textbf{Time complexity :} Matrix inversion $\longrightarrow \boldsymbol{O(N^3)}.$
-			\item \textbf{Space complexity :} Storing covariance matrix $\longrightarrow \boldsymbol{O(N^2)}.$
+			\item \textbf{Time complexity :} Matrix inversion $\longrightarrow \boldsymbol{\mathcal{O}(N^3)}.$
+			\item \textbf{Space complexity :} Storing covariance matrix $\longrightarrow \boldsymbol{\mathcal{O}(N^2)}.$
 		\end{itemize}
 
 		\vspace{1cm}
@@ -230,7 +230,7 @@
 
 
    	 \begin{frame}{Independant Local Kriging}
-		\textbf{Idea :} Split the observations $\mathcal{D}$ into subsets $\mathcal{D}_1,\dots,\mathcal{D}_K$, with $\mathcal{D}_k := \left \{ (x_i, y_i) \mid x_i \in \Omega_k \right \}.$
+		\textbf{Idea :} Split the observations $\mathcal{D}$ into $K$ subsets $\mathcal{D}_1,\dots,\mathcal{D}_K$, with $\mathcal{D}_k := \left \{ (x_i, y_i) \mid x_i \in \Omega_k \right \}.$
 		\begin{center}
 			Region $\Omega_k \longrightarrow$ Local gaussian process $f_k \longrightarrow$ Associated covariance function $C_k(\cdot, \cdot)$.
 		\end{center}
@@ -319,7 +319,7 @@
 	%%----------------------------------------------------------------------
 	
 	
-	\section{Ideas to Tackle the Issues}
+	\section{Methods to Tackle the Issue}
 
     \subsection{Patchwork Kriging (Park and Aley)}
 	
@@ -575,7 +575,7 @@
 	
 		\vspace{0.5cm}
 
-		\textbf{Other hyperparameters :}
+		\textbf{Hyperparameters :}
 		\begin{itemize}
 			\item Number of regions $\boldsymbol{K}=2^D$ (where $D$ is the depth of the PCA partitioning).
 			\begin{itemize}

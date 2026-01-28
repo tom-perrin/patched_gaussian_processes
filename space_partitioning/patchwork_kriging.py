@@ -205,7 +205,7 @@ class PatchworkKriging:
         # self.v = self.L_inv @ C_D_Delta.T
 
 
-    def predict(self, X_star, region_idx: int):
+    def predict(self, X_star):
         '''
         Predicts mean and variance at locations X_star
         ''' 
@@ -263,4 +263,4 @@ class PatchworkKriging:
         E_star = mid_term @ self.Q @ np.hstack(self.Y)
         V_star = c_star_star - w_star.T @ w_star - mid_term @ self.Q @ mid_term.T
 
-        return E_star, V_star
+        return E_star, V_star, region_idx

@@ -229,7 +229,7 @@ class PartitioningGraph:
         int or None
             Index of the leaf containing x_star, or None if not found.
         '''
-        x_star = np.asarray(x_star).ravel()  # <-- convert to 1D array
+        x_star = np.asarray(x_star).ravel()  # convert to 1D array
 
         for idx, leaf in enumerate(self.nodes):
             constraints = get_constraints(leaf)

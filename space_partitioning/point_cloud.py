@@ -30,13 +30,15 @@ def generate_gaussian_clouds(
 def generate_uniform_cloud(
         dimension : int,
         nb_sample: int,
+        low: float,
+        high: float,
         seed = None
     ) -> np.ndarray:
 
     rng = np.random.default_rng(seed)
 
     # Uniform distribution in [0, 1) for each dimension
-    return rng.uniform(low=0.0, high=1.0, size=(nb_sample, dimension))
+    return rng.uniform(low=low, high=high, size=(nb_sample, dimension))
 
 
 def cloud_from_file(
@@ -63,10 +65,13 @@ def cloud_from_file(
         return generate_gaussian_clouds(point_distributions, seed)
     
 
-    elif cloud_type == UNIFORM:        
+    elif cloud_type == UNIFORM:     
+        low, high = process.get("boundaries", None) or [0.0, 1.0]   
         return generate_uniform_cloud(
             process["dimension"], 
             process["nb_samples"],
+            low,
+            high,
             seed)
     
     else:

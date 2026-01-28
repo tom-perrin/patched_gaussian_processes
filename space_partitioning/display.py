@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.cm import get_cmap
 import networkx as nx
 
 from tree_partitioning import PartitioningTree
@@ -133,5 +134,64 @@ def plot_grid(grid: PartitioningGrid, size=10, alpha=0.7):
     )
 
     # Show figure
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_prediction_along_line(
+    t,
+    Y_pred,
+    var_pred,
+    regions,
+    show_std=True
+):
+    """
+    Plot 2D de la prédiction le long d'une ligne
+
+    Parameters
+    ----------
+    t : (N,)
+        Paramètre le long de la ligne
+    Y_pred : (N,)
+        Prédictions
+    var_pred : (N,)
+        Variances
+    regions : (N,)
+        Régions associées
+    show_std : bool
+        Affiche ± écart-type si True
+    """
+    std = np.sqrt(var_pred)
+    unique_regions = np.unique(regions)
+    cmap = get_cmap("tab10")
+
+    plt.figure(figsize=(10, 4))
+
+    for i, reg in enumerate(unique_regions):
+        mask = regions == reg
+        color = cmap(i % 10)
+
+        plt.plot(
+            t[mask],
+            Y_pred[mask],
+            color=color,
+            label=f"Région {reg}",
+            linewidth=2
+        )
+
+        if show_std:
+            plt.fill_between(
+                t[mask],
+                Y_pred[mask] - std[mask],
+                Y_pred[mask] + std[mask],
+                color=color,
+                alpha=0.25
+            )
+
+    plt.xlabel("Paramètre le long de la ligne")
+    plt.ylabel("Prédiction")
+    plt.title("Prédiction krigeage le long d’un segment")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.show()

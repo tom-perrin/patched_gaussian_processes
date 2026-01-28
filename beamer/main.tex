@@ -615,7 +615,20 @@
 	%%----------------------------------------------------------------------
 	
 	
-	\section{Performance Comparison and Conclusion}
+	\section{Performance Comparison}
+	
+	\begin{frame}{Title}
+		\begin{itemize}
+			\item Item
+			\item Item
+		\end{itemize}
+	\end{frame}	
+
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+	
+	\section{Conclusion}
 	
 	\begin{frame}{Title}
 		\begin{itemize}
@@ -634,257 +647,6 @@
 	
 	\begin{frame}[allowframebreaks=1]
 		\frametitle{References}
-		\bibliographystyle{apalike}      % basic style, author-year citations
-		\bibliography{biblio}
-	\end{frame}
-	%
-	%
-	
-	
-
-	
-\end{document}
-
-\documentclass[10pt, t,aspectratio=169, usepdftitle=true]{beamer} 
-
-
-\def\withanim{0}
-
-%%-----------------------------------------------------------------------
-%% Preambule: Packages and command definitions
-%%-----------------------------------------------------------------------
-
-
-%% Logos
-\newcommand{\logoHeader}{mines-vert.png}
-\newcommand{\logoTitle}{\vspace{-5em}
-	\includegraphics[width=15em]{mines.png}}
-
-%% Preambule
-\input{preambule.tex}
-
-
-% Grey out items
-\setbeamercovered{still covered={\opaqueness<1->{0}},again covered={\opaqueness<1->{60}}}
-
-
-%%-----------------------------------------------------------------------
-%% Presentation characteristics
-%%-----------------------------------------------------------------------
-
-% Title 
-\title{Patched Gaussian Processes}
-
-
-% Authors
-\author[T. Perrin, L. Roux \& T. Lambert]{\textbf{Tom Perrin, Leo Roux \& Thibault Lambert}}
-
-\institute{Option Géostatistique, Mines Paris - PSL 
-    \vspace{1em}\\
-	\texttt{tom.perrin@etu.minesparis.psl.eu\\
-            leo.roux@etu.minesparis.psl.eu\\
-            thibault.lambert@etu.minesparis.psl.eu}\\
-	\vspace{1em}
-	%{\textit{Joint work with N. Desassis (Mines Paris), A. Lang (Chalmers), L. Clarotto (AgroParisTech)}}
-}
-
-% Event
-%\date{SAMA @ Aussois \\ September 16th, 2024}
-\date{}
-
-
-%%-----------------------------------------------------------------------
-%%----------------------------------------------------------------------
-%%-----------------------------------------------------------------------
-%%----------------------------------------------------------------------
-
-
-\begin{document}
-	
-	% Equations
-	\setlength{\abovedisplayskip}{0.75ex}
-	\setlength{\belowdisplayskip}{0.75ex}
-	
-	%%----------------------------------------------------------------------
-	
-	\begin{frame}[plain,c]
-		\titlepage
-	\end{frame}
-	
-	%%----------------------------------------------------------------------
-	
-	
-	
-	%%-------------------------- Outline frame before each section
-	\AtBeginSection[]{
-		\begin{frame}
-			\frametitle{Table of contents}
-			\tableofcontents[currentsection]
-		\end{frame} 
-	}
-	
-	\AtBeginSubsection[]{
-		\begin{frame}
-			\frametitle{Table of contents}
-			\tableofcontents[currentsubsection]
-		\end{frame} 
-	}
-	%%--------------------------
-	
-	
-	
-	%%----------------------------------------------------------------------
-	%%----------------------------------------------------------------------
-	
-
-
-	\section{Prerequisites}
-	
-	\begin{frame}{Title}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-
-    \subsection{Gaussian Process}
-	
-	\begin{frame}{Gaussian Process}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-
-
-    \subsection{Kriging}
-	
-	\begin{frame}{Kriging}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-
-
-    \subsection{Bayesian Approach}
-	
-	\begin{frame}{Bayesian Approach}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-	
-	%%----------------------------------------------------------------------
-	%%----------------------------------------------------------------------
-	
-
-
-	\section{The "Big $N$" Problem and Beyond}
-	
-	\subsection{Computational Costs}
-	
-	\begin{frame}{Computational Costs}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-
-
-    \subsection{The Discontinuity Problem}
-	
-	\begin{frame}{First Patchwork Idea}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-
-    \begin{frame}{Independant Local Kriging}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-	
-	%%----------------------------------------------------------------------
-	%%----------------------------------------------------------------------
-	
-	
-	\section{Ideas to Tackle the Issues}
-
-    \subsection{Patchwork Kriging (Park \& Aley)}
-	
-	\begin{frame}{Intuitive Idea}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-
-    \begin{frame}{Theoretical Definition}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-
-    \begin{frame}{Proper Solution}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-
-
-    \subsection{Nearest-Neighbors Gaussian Processes (Datta et al.)}
-	
-	\begin{frame}{Intuitive Idea}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-
-    \begin{frame}{Theoretical Definition}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-
-    \begin{frame}{Proper Solution}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}
-	
-	%%----------------------------------------------------------------------
-	%%----------------------------------------------------------------------
-	
-	
-	\section{Performance Comparison and Conclusion}
-	
-	\begin{frame}{Title}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
-	\end{frame}	
-
-	%%----------------------------------------------------------------------
-	%%----------------------------------------------------------------------
-	
-	\appendix
-	
-	\section*{Appendix}
-	
-	\begin{frame}
-		\frametitle{References}
-		\setlength{\bibitemsep}{1.5em}
 		\bibliographystyle{apalike}      % basic style, author-year citations
 		\bibliography{biblio}
 	\end{frame}

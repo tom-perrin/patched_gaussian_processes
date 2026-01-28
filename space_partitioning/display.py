@@ -135,3 +135,27 @@ def plot_grid(grid: PartitioningGrid, size=10, alpha=0.7):
     # Show figure
     plt.tight_layout()
     plt.show()
+
+
+def _draw_1d_boundaries(node: PartitioningTree, upper: float):
+        if node.left is None: return
+        segment = get_clipped_frontier(node)
+        if segment is not None:
+            val = segment[0][0]        
+            plt.plot([val, val], [0, upper], 'k--', lw=1, alpha=0.9)
+        _draw_1d_boundaries(node.left, upper)
+        _draw_1d_boundaries(node.right, upper)
+
+def plot_1D_tree(tree: PartitioningTree, size=10, alpha=0.7):
+    _prepare()
+
+    plt.scatter(
+            tree.X, 
+            tree.Y,
+            s=size, 
+            alpha=alpha,
+        )
+    
+    _draw_1d_boundaries(tree, np.max(tree.Y))
+
+    _show()

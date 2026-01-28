@@ -19,14 +19,23 @@ def principal_direction(X: np.ndarray) -> np.ndarray:
     # Centering data
     X_centered = X - np.mean(X, axis=0)
 
+    n, d = X_centered.shape
+
     # Covariance matrix
-    cov = np.cov(X_centered, rowvar=False)
+    if d == 1:
+        # For 1D, np.cov returns a scalar; convert to 2D
+        cov = np.array([[np.var(X_centered, ddof=1)]])
+    else:
+        cov = np.cov(X_centered, rowvar=False)
 
     # Spectral decomposition
     eigenvalues, eigenvectors = np.linalg.eigh(cov)
 
     # Highest eigenvalue eigenvector = principal vector
     principal_vector = eigenvectors[:, np.argmax(eigenvalues)]
+
+    # Ensure shape (d,)
+    principal_vector = principal_vector.ravel()
 
     return principal_vector
 

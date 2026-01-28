@@ -1,5 +1,5 @@
 from point_cloud import cloud_from_file
-from display import plot_tree, plot_grid
+from display import plot_tree, plot_grid, plot_1D_tree
 from plot3d import plot_field_3d_plotly
 
 from tree_partitioning import PartitioningTree
@@ -20,38 +20,49 @@ DEPTH = 3
 
 N_DIV, P_DIV = 3, 3
 
-def subsample_field(X_field, Y_field, ratio, seed=None):
-    """
-    ratio ∈ (0, 1] : fraction de points conservés
-    """
-    assert 0 < ratio <= 1.0
+# def subsample_field(X_field, Y_field, ratio, seed=None):
+#     """
+#     ratio ∈ (0, 1] : fraction de points conservés
+#     """
+#     assert 0 < ratio <= 1.0
 
-    N = X_field.shape[0]
+#     N = X_field.shape[0]
 
-    rng = np.random.default_rng(seed)
-    idx = rng.choice(N, size=int(ratio * N), replace=False)
+#     rng = np.random.default_rng(seed)
+#     idx = rng.choice(N, size=int(ratio * N), replace=False)
 
-    return X_field[idx], Y_field[idx]
+#     return X_field[idx], Y_field[idx]
 
 if __name__ == "__main__":
-    # Testing
+    # Generating cloud
     X_data = cloud_from_file(CLOUD_FOLDER+CLOUD_FILE, SEED)
+
+    # Simulating
     Y_data = analytic_field(X_data)
 
     tree = PartitioningTree(X_data, DEPTH, Y_data)
     tree.fully_extend()
-    plot_tree(tree)
+    
+    # only for dimension 2
+    # plot_tree(tree)
+
+    #only for dimension 1
+    plot_1D_tree(tree)
 
     graph = PartitioningGraph(tree)
 
     pk = PatchworkKriging(
         graph,
         rbf_kernel,
-        30,
+        1,
         pseudo_noise=1e-3
     )
-    
+
     pk.precompute()
+
+    print("so far so good ! pls retry with dimension 2 !!")
+    print(f"{X_data.shape=}")
+    raise SystemExit
 
     import numpy as np
     X_pred = np.array([[0.2, 0.8]])

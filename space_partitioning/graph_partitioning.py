@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -24,58 +26,118 @@ def get_constraints(node: PartitioningTree):
     return constraints
 
 
-def get_clipped_frontier(
-        node: PartitioningTree, 
-        external_constraints: list = None
-        ):
-    '''
-    Computes the 2 end points of the frontier segment of a node's split, clipped by previous frontiers
-    and restricted to the node's bounding box.
-    '''
+# def get_clipped_frontier(
+#         node: PartitioningTree, 
+#         external_constraints: list = None
+#         ):
+#     '''
+#     Computes the 2 end points of the frontier segment of a node's split, clipped by previous frontiers
+#     and restricted to the node's bounding box.
+#     '''
+#     if node.pdir is None or node.bb_min is None or node.bb_max is None:
+#         return None
+    
+#     # Frontier segment equation
+#     v = node.pdir
+#     c = node.threshold
+#     v_orth = np.array([-v[1], v[0]])
+#     anchor = v * c  # reference point on the segment
+
+#     # --- Parametrization of the end points using the bounding box ---
+#     # Project all 4 corners of the bounding box onto v_orth to find min/max t
+#     corners = np.array([
+#         [node.bb_min[0], node.bb_min[1]],
+#         [node.bb_min[0], node.bb_max[1]],
+#         [node.bb_max[0], node.bb_min[1]],
+#         [node.bb_max[0], node.bb_max[1]]
+#     ])
+#     t_values = [(corner - anchor) @ v_orth for corner in corners]
+#     t_min, t_max = min(t_values), max(t_values)
+
+#     # Checks for external constraints already defined
+#     if external_constraints is not None:
+#         constraints = external_constraints
+#     else:
+#         constraints = get_constraints(node)
+
+#     # Clip segment based on constraints
+#     for v_i, c_i, sign_i in constraints:
+#         dot_orth = v_orth @ v_i
+#         dot_anchor = anchor @ v_i
+
+#         lhs = sign_i * dot_orth
+#         rhs = sign_i * (c_i - dot_anchor)
+
+#         if abs(lhs) > 1e-9:  # line is not vertical
+#             val = rhs / lhs
+#             if lhs > 0:
+#                 t_max = min(t_max, val)
+#             else:
+#                 t_min = max(t_min, val)
+    
+#     if t_min > t_max:  # no frontier
+#         return None
+#     return anchor + t_min * v_orth, anchor + t_max * v_orth
+
+
+def get_clipped_frontier(node: 'PartitioningTree', external_constraints: list = None):
     if node.pdir is None or node.bb_min is None or node.bb_max is None:
         return None
-    
-    # Frontier segment equation
+
     v = node.pdir
     c = node.threshold
-    v_orth = np.array([-v[1], v[0]])
-    anchor = v * c  # reference point on the segment
+    anchor = v * c
+    N = v.shape[0]
 
-    # --- Parametrization of the end points using the bounding box ---
-    # Project all 4 corners of the bounding box onto v_orth to find min/max t
-    corners = np.array([
-        [node.bb_min[0], node.bb_min[1]],
-        [node.bb_min[0], node.bb_max[1]],
-        [node.bb_max[0], node.bb_min[1]],
-        [node.bb_max[0], node.bb_max[1]]
-    ])
-    t_values = [(corner - anchor) @ v_orth for corner in corners]
-    t_min, t_max = min(t_values), max(t_values)
-
-    # Checks for external constraints already defined
-    if external_constraints is not None:
-        constraints = external_constraints
+    if N == 1:
+        return np.array([c]), np.array([c])
+    
+    elif N == 2:
+        # Use the old 2D orthogonal direction
+        v_orth = np.array([-v[1], v[0]])
+        # corners
+        corners = np.array([
+            [node.bb_min[0], node.bb_min[1]],
+            [node.bb_min[0], node.bb_max[1]],
+            [node.bb_max[0], node.bb_min[1]],
+            [node.bb_max[0], node.bb_max[1]]
+        ])
+        t_values = [(corner - anchor) @ v_orth for corner in corners]
+        t_min, t_max = min(t_values), max(t_values)
+    
     else:
-        constraints = get_constraints(node)
+        # General N-D case
+        # Construct orthonormal basis of hyperplane orthogonal to v
+        Q, _ = np.linalg.qr(np.eye(N) - np.outer(v, v)/np.dot(v,v))
+        v_orths = [Q[:, i] for i in range(N) if np.linalg.norm(Q[:, i]) > 1e-9]
+        # Generate bounding box corners
+        import itertools
+        bb_corners = np.array(list(itertools.product(*zip(node.bb_min, node.bb_max))))
+        # Use first orthogonal vector to parametrize segment
+        v_orth = v_orths[0]
+        t_values = [(corner - anchor) @ v_orth for corner in bb_corners]
+        t_min, t_max = min(t_values), max(t_values)
 
-    # Clip segment based on constraints
+    # Clip by constraints
+    constraints = external_constraints if external_constraints is not None else get_constraints(node)
     for v_i, c_i, sign_i in constraints:
         dot_orth = v_orth @ v_i
         dot_anchor = anchor @ v_i
-
         lhs = sign_i * dot_orth
         rhs = sign_i * (c_i - dot_anchor)
-
-        if abs(lhs) > 1e-9:  # line is not vertical
+        if abs(lhs) > 1e-9:
             val = rhs / lhs
             if lhs > 0:
                 t_max = min(t_max, val)
             else:
                 t_min = max(t_min, val)
-    
-    if t_min > t_max:  # no frontier
+
+    if t_min > t_max:
         return None
-    return anchor + t_min * v_orth, anchor + t_max * v_orth
+
+    p1 = anchor + t_min * v_orth
+    p2 = anchor + t_max * v_orth
+    return p1, p2
 
 
 

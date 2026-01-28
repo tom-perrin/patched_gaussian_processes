@@ -116,6 +116,14 @@ class PatchworkKriging:
             sol = solve_triangular(L_k, y_k, lower=True)
             self.alpha_k.append(solve_triangular(L_k.T, sol, lower=False))
         
+        # print(
+        #     f"{n_regions=}",
+        #     f"{n_edges=}",
+        #     f"{n_pseudo=}",
+        #     sep="\n"
+        # )
+        # raise SystemExit
+
         # Compute C_D_Delta : covariance between local data and boundary differences at pseudo-points
         C_D_Delta = []
         for k in range(n_regions):

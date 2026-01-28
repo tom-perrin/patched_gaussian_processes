@@ -415,10 +415,12 @@
 		Noting $Q:=\left(  C_{\mathcal{D}\mathcal{D}} - C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1}, v:=L^{-1}C_{\delta\mathcal{D}}$ and $w_*:=L^{-1}c_{\delta*}^{(k)}$ (where $C_{\delta\delta} = LL^T$),
 
 		\begin{equation*}
+			\boxed{
 			\begin{split}
 			\mathbb{E} \left[ f_*^{(k)} \mid y, \delta = 0 \right] & = (c_{*\mathcal{D}}^{(k)} - w_*^Tv) Q y.\\
 			\mathbb{V} \left[ f_*^{(k)} \mid y, \delta = 0 \right] & = c_{**} - w_*^T w_* - (c_{*\mathcal{D}}^{(k)} - w_*^Tv) Q (c_{*\mathcal{D}}^{(k)} - w_*^Tv)^T.
 			\end{split}
+			}
 		\end{equation*}
 	\end{frame}
 
@@ -538,6 +540,54 @@
 		\mathbb{V}\left[f_*^{(k)} \mid y, \delta = 0 \right] = c_{**} - c_{*\delta}^{(k)} C_{\delta\delta}^{-1} c_{\delta*}^{(k)} - \left( c_{*\mathcal{D}}^{(k)} - c_{*\delta}^{(k)} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right) \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} \left( c_{\mathcal{D}*}^{(k)} - C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} c_{\delta*}^{(k)} \right).
 		$$
 	\end{frame}
+
+	\begin{frame}{Choice of the parameters}
+		\textbf{Covariance function :}
+		\begin{itemize}
+			\item Different for each region $\longrightarrow c_k(\cdot,\cdot)$ for $k\in\{1,\dots,K\}.$ 
+			\item Obtained by minimizing the negative log-likelihood :
+		\end{itemize}
+		$$
+		\begin{aligned}
+		NL(\theta) &  :=  - \log p(y,\delta=0 \mid \theta) \\
+		& = \frac{N}{2} \log(2\pi) + \frac{1}{2} \log
+		\begin{vmatrix}
+			C_{\mathcal{D}\mathcal{D}} & C_{\mathcal{D}\delta} \\
+			C_{\delta\mathcal{D}} & C_{\delta\delta}
+		\end{vmatrix}
+		+ \frac{1}{2} \left[ 
+		\begin{array}{l}
+			y \\
+			0
+		\end{array}
+		\right]^T
+		\begin{bmatrix}
+			C_{\mathcal{D}\mathcal{D}} & C_{\mathcal{D}\delta} \\
+			C_{\delta\mathcal{D}} & C_{\delta\delta}
+		\end{bmatrix}^{-1} \left[
+		\begin{array}{l}
+			y \\
+			0
+		\end{array}
+		\right].
+		\end{aligned}
+		$$
+	
+		\vspace{0.5cm}
+
+		\textbf{Other hyperparameters :}
+		\begin{itemize}
+			\item Number of regions $\boldsymbol{K}=2^D$ (where $D$ is the depth of the PCA partitioning).
+			\begin{itemize}
+				\item[\ding{228}] $K \nearrow \implies$ Less accurate predictions.
+	    		\end{itemize}
+			\item Number of pseudo-observations $\boldsymbol{B}$ per frontier.
+			\begin{itemize}
+				\item[\ding{228}] $B \nearrow \implies$ More accurate predictions.
+			\end{itemize}
+		\end{itemize}
+	\end{frame}
+		
 
 	%%----------------------------------------------------------------------
 

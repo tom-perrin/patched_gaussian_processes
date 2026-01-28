@@ -62,6 +62,52 @@ def predict_along_segment(
 
     return t, X_pred, Y_pred, var_pred, regions
 
+
+def predict_on_grid_2d(
+    pk: PatchworkKriging,
+    x_bounds,
+    y_bounds,
+    nx,
+    ny,
+    invalid_region=-1
+):
+    x = np.linspace(x_bounds[0], x_bounds[1], nx)
+    y = np.linspace(y_bounds[0], y_bounds[1], ny)
+
+    Xg, Yg = np.meshgrid(x, y)
+
+    Z_pred = np.full_like(Xg, np.nan, dtype=float)
+    Z_var = np.full_like(Xg, np.nan, dtype=float)
+    Z_region = np.full_like(Xg, invalid_region, dtype=int)
+    valid_mask = np.zeros_like(Xg, dtype=bool)
+
+    for j in range(ny):
+        for i in range(nx):
+            Xp = np.array([[Xg[j, i], Yg[j, i]]])
+            try:
+                y_pred, v_pred, region = pk.predict(Xp)
+                yv = y_pred.item()
+                vv = v_pred.item()
+
+                if not np.isfinite(yv) or not np.isfinite(vv):
+                    continue
+
+                if not(-2 < yv < 2):
+                    continue
+
+                Z_pred[j, i] = yv
+                Z_var[j, i] = vv
+                Z_region[j, i] = int(region)
+                valid_mask[j, i] = True
+
+            except Exception:
+                continue
+
+    return Xg, Yg, Z_pred, Z_var, Z_region, valid_mask
+
+
+
+
 def subsample_field(X_field, Y_field, ratio, seed=None):
     """
     ratio ∈ (0, 1] : fraction de points conservés

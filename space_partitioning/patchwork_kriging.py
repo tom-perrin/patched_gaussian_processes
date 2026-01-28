@@ -211,7 +211,7 @@ class PatchworkKriging:
         ''' 
         region_idx = self.partitioning.find_location(X_star)
 
-        if not region_idx:
+        if region_idx is None:
             raise Exception(f"Couldn't find region for point {X_star}")
 
         # Compute of covariance between X_star and observations D and Delta

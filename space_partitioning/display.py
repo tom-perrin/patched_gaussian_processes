@@ -161,7 +161,7 @@ def plot_prediction_along_line(
     show_std : bool
         Affiche ± écart-type si True
     """
-    std = np.sqrt(var_pred)
+    std = np.sqrt(np.abs(var_pred))
     unique_regions = np.unique(regions)
     cmap = get_cmap("tab10")
 

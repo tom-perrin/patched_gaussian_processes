@@ -693,32 +693,60 @@
 	%%----------------------------------------------------------------------
 	%%----------------------------------------------------------------------
 
-	\begin{frame}{Performances}
-	For Method I (\textbf{Patchwork Kriging}), the accuracy concerns : \vspace{0.1cm}
-    	\begin{itemize}
-      		\item <1-> Quality of local reconstruction
- 		\item <1-> Quality of "stiches" (junctions of regions)
-   	 \end{itemize}
-	
+	\begin{frame}{Results}
+	In \cite{parkchiwoo-2018}, Tests have been made to understand the extent of the Patchwork Kriging Technique
+
+	\begin{itemize}
+		\item Result are the most accurate for \textbf{long-range, stationary} covariance functions.
+		\item Stitching accuracy is \textbf{conditioned by $B$}, but stops for $B \geq 8$
+	\end{itemize}
+
 	\only<2->{
 	\vspace{0.3cm}
 	\begin{columns}[T]
  		 \begin{column}{0.5\textwidth}
    			 \begin{figure}
-    				\includegraphics[width=.8\textwidth]{figures/Recollement_B_1.png}
+    				\includegraphics[width=.8\textwidth]{figures/obs_bruitées.png}
     				\vspace*{-0.3cm}
-     				\caption{B = 0}
+     				\caption{Observations bruitées}
    			 \end{figure}
  		 \end{column}
  		 \begin{column}{0.5\textwidth}
    			 \begin{figure}
-    				\includegraphics[width=.8\textwidth]{figures/Recollement_B_2.png}
+    				\includegraphics[width=.8\textwidth]{figures/champ_prédit.png}
      				\vspace*{-0.3cm}
-      				\caption{B = 5}
+      				\caption{Champ prédit}
    			 \end{figure}
   		\end{column}
 	\end{columns}
 	}
+	\end{frame}
+
+
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+
+	\begin{frame}{Results}
+	In \cite{parkchiwoo-2018}, Tests have been made to understand the extent of the Patchwork Kriging Technique
+
+	\begin{itemize}
+		\item Result are the most accurate for \textbf{long-range, stationary} covariance functions.
+		\item Stitching accuracy is \textbf{conditioned by $B$}, but stops for $B \geq 8$
+	\end{itemize}
+	
+	\vspace{0.3cm}
+	
+	\textbf{High dimensionality ?}
+	\begin{itemize}
+		\item recal that complexity $\longrightarrow \boldsymbol{\mathcal{O}(\frac{N^3}{K^2} + d^3B^3K )}$
+		\item experimentally, for $d > 10$, dimension is a determining factor for computation time
+	\end{itemize}
+
+	$$
+		\rightarrow \text{trade-of quality/speed : keep } \frac{N}{K} \text{ and } dB \text{ as low as possible.}
+	$$
+
+	
 	\end{frame}	
 
 	%%----------------------------------------------------------------------
@@ -745,6 +773,7 @@
 	\longrightarrow \boldsymbol{\mathcal{O}(Nm^3 )}
 	$$
 	\end{frame}	
+	
 	
 	%%----------------------------------------------------------------------
 	%%----------------------------------------------------------------------

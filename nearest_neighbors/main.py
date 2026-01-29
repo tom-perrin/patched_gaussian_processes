@@ -13,6 +13,7 @@ SEED = 67
 if __name__ == "__main__":
     print("Le script est lancé directement.")
     X_data = cloud_from_file(CLOUD_FOLDER+CLOUD_FILE, SEED)
-    X_pred = np.array([[0,0.5],[0.5,0.5],[0.5,0],[0.25,0.25],[0.75,0.75]])
+    X_pred = np.array([[0,0.5],[0.5,0.5],[0.5,0],[0.25,0.25],[0.75,0.75],
+                        [0.1,0.9],[0.9,0.1],[0.3,0.7],[0.7,0.3],[0.4,0.6]])
     new_data = local_kriging(X_data, X_pred, 20)
     animate_nearest_neighbors( new_data, X_data, 20)

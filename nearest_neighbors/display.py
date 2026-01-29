@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 from matplotlib.animation import FuncAnimation
+import os
+
 
 # --------------------------------------------------
 
@@ -36,6 +38,9 @@ def animate_nearest_neighbors(
     points2: np.ndarray,
     m: int,
 ):
+    if not os.path.exists('frames'):
+        os.makedirs('frames')
+
     v_min, v_max = points2[:, 2].min(), points2[:, 2].max()
     fig, ax = plt.subplots(figsize=(8, 8))
     ax.set_aspect('equal', adjustable='box')
@@ -56,7 +61,7 @@ def animate_nearest_neighbors(
     # Scatter pour les m plus proches voisins de points2
     scatter_p2_neighbors = ax.scatter(data_subset[:, 0], data_subset[:, 1], c=data_subset[:, 2], cmap='viridis',
                                       vmin=v_min, vmax=v_max, label=' Nearest Neighbors (P2)')
-    fig.colorbar(scatter_p2_neighbors, label='Z value')
+    fig.colorbar(scatter_p2_neighbors, ax=ax, label='Value (P2)')
     circle = plt.Circle((0, 0), 0, color='grey', fill=False, 
                             linestyle='--', alpha=0.5, linewidth=1.5)
     ax.add_patch(circle)
@@ -93,14 +98,7 @@ def animate_nearest_neighbors(
         
         return [scatter_p1, scatter_p2_neighbors, circle] # Retourner les objets modifiés pour l'animation
 
-    ani = FuncAnimation(
-        fig,
-        update,
-        frames=len(points1),
-        interval=2 * 1000, # Durée entre les frames en millisecondes
-        blit=True, # Optimisation pour ne redessiner que les éléments qui changent
-        repeat=True
-    )
-
-    ani.save('anim.gif', writer='pillow', dpi=100)
+    for i in range(len(points1)):
+        update(i) # Force la mise à jour de la figure à la frame i
+        fig.savefig(f"frames/frame_{i:03d}.png", dpi=100)
     return None

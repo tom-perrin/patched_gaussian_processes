@@ -8,7 +8,7 @@
 \usepackage{amssymb}
 \usepackage{tikz}
 \usepackage{pifont}
-
+\usepackage{animate}
 \usepackage{natbib}
 
 \newcommand*\circled[1]{\tikz[baseline=(char.base)]{
@@ -167,7 +167,8 @@
 		\begin{itemize}
    			 \item \textbf{Predicted value :} $f_*(x^*) \approx c_{x*}^T(\sigma^2I+C_{xx})^{-1}y.$
   		 	 \item \textbf{Uncertainty :} $c_{**} - c_{x*}^T(\sigma^2I+C_{xx})^{-1}c_{x*}.$
-		\end{itemize} 
+		     
+			\end{itemize} 
 	\end{frame}
 
 	
@@ -598,21 +599,32 @@
 		\begin{itemize}
 			\item It seems logical to assume that far away observations have little impact on the Kriging.
 			\item Instead Kriging the whole dataset,  we are Kriging each $x^{*}$ only with the nearest neighbors.
+			\item Restraining the Kriging to the $m$ nearest neighbors of each prediction location $x^*$ leads to a sub-optimal prediction.
+		
 		\end{itemize}
+	\pause
 	\end{frame}
 
-  	 \begin{frame}{Theoretical Definition}
+  	 \begin{frame}{nearest-Neighbors}
+		Nearest-Neighbors are the points that have the highest spatial correlation with the prediction location $x^*$:
 		\begin{itemize}
-			\item Item
-			\item Item
+		\item In the case of stationary covariance functions, these are simply the closest points to $x^*$.
+		\item For non-stationary covariance functions, the nearest neighbors can be found by evaluating the covariance between $x^*$ and all observation locations and selecting the $m$ locations with the highest covariance values.
 		\end{itemize}
+		\begin{center}
+        % Syntaxe : \animategraphics[options]{FPS}{base_nom}{début}{fin}
+        \animategraphics[autoplay,loop,width=0.4\textwidth]{0.8}{frames/frame_}{000}{009}
+    \end{center}
+		
+
 	\end{frame}
 
-   	\begin{frame}{Proper Solution}
+
+   	\begin{frame}{Choosing m }
 		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
+			\item First idea : running cross-validation for different values of $m$ and choosing the one that minimizes the prediction error.
+			\item In Bayesian Inference, m is treated as a parameter and updated in the MCMC algorithm.
+				\end{itemize}
 	\end{frame}
 	
 	%%----------------------------------------------------------------------

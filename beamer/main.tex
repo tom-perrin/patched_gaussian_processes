@@ -360,6 +360,17 @@
         				c^{(k)}_{\delta*} & C_{\delta\mathcal{D}} & C_{\delta\delta}
     			\end{bmatrix} \right).
     		\end{equation*}
+
+		\vspace{0.5cm}		
+
+		\begin{itemize}
+			\item On the border between regions $k$ and $l$ $\delta_{k,l} = f_k - f_l$
+			\item Under the asumption $f_k$ and $f_l$ are independent gaussian processes, $\delta_{k,l}$ is one too
+			\item Specifically, we can easily compute its covariance with $f_j(x)$, for a certain $x \in\mathcal{D}_j$
+		\end{itemize}
+		$$
+			\mathbb{C}\text{ov}(\delta_{k,l}(x_1) , f_j(x_2)) = \mathbb{C}\text{ov}(f_k(x_1) , f_j(x_2)) - \mathbb{C}\text{ov}(f_l(x_1) , f_j(x_2))
+		$$
 	\end{frame}
 
 	\begin{frame}{Patchwork Kriging}
@@ -648,32 +659,70 @@
 	%%----------------------------------------------------------------------
 	
 
-	\begin{frame}{Complexity Analysis II}
-	For Method I (\textbf{NN-Kriging}), 
-	
-  	\textbf{Reminder}
+	\begin{frame}{Accuracy}
+	For Method I (\textbf{Patchwork Kriging}), the accuracy concerns : \vspace{0.1cm}
     	\begin{itemize}
-      		\item <1-> $N$ observations
- 		\item <1-> for each new location, a neighbourhood of size $m$ is computed
+      		\item <1-> Quality of local reconstruction
+ 		\item <1-> Quality of "stiches" (junctions of regions)
    	 \end{itemize}
-
-	\pause
- 	 \textbf<2->{Complexity}
- 	  \begin{itemize}
-       		\item<2-> detail ?
-	\end{itemize}
 	
-	\pause
-	$$
-	\longrightarrow \boldsymbol{\mathcal{O}(Nm^3 )}
-	$$
+	\only<2->{
+	\vspace{0.3cm}
+	\begin{columns}[T]
+ 		 \begin{column}{0.5\textwidth}
+   			 \begin{figure}
+    				\includegraphics[width=.8\textwidth]{figures/Recollement_B_1.png}
+    				\vspace*{-0.3cm}
+     				\caption{B = 0}
+   			 \end{figure}
+ 		 \end{column}
+ 		 \begin{column}{0.5\textwidth}
+   			 \begin{figure}
+    				\includegraphics[width=.8\textwidth]{figures/Recollement_B_2.png}
+     				\vspace*{-0.3cm}
+      				\caption{B = 5}
+   			 \end{figure}
+  		\end{column}
+	\end{columns}
+	}
+	\end{frame}	
+	
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+
+	\begin{frame}{Performances}
+	For Method I (\textbf{Patchwork Kriging}), the accuracy concerns : \vspace{0.1cm}
+    	\begin{itemize}
+      		\item <1-> Quality of local reconstruction
+ 		\item <1-> Quality of "stiches" (junctions of regions)
+   	 \end{itemize}
+	
+	\only<2->{
+	\vspace{0.3cm}
+	\begin{columns}[T]
+ 		 \begin{column}{0.5\textwidth}
+   			 \begin{figure}
+    				\includegraphics[width=.8\textwidth]{figures/Recollement_B_1.png}
+    				\vspace*{-0.3cm}
+     				\caption{B = 0}
+   			 \end{figure}
+ 		 \end{column}
+ 		 \begin{column}{0.5\textwidth}
+   			 \begin{figure}
+    				\includegraphics[width=.8\textwidth]{figures/Recollement_B_2.png}
+     				\vspace*{-0.3cm}
+      				\caption{B = 5}
+   			 \end{figure}
+  		\end{column}
+	\end{columns}
+	}
 	\end{frame}	
 
 	%%----------------------------------------------------------------------
 	%%----------------------------------------------------------------------
 	
 
-	\begin{frame}{Accuracy}
+	\begin{frame}{Complexity Analysis II}
 	For Method I (\textbf{NN-Kriging}), 
 	
   	\textbf{Reminder}
@@ -700,6 +749,12 @@
 	\section{Conclusion}
 	
 	\begin{frame}[c]{Conclusion}
+		\begin{center}
+			Merci pour votre attention !
+		\end{center}
+			
+		\vspace{1.5cm}
+		\pause
 		\begin{center}
 			\begin{quote}
 				"On ne peut pas inverser une matrice de taille 20000 une fois, mais on peut inverser 20000 matrice de taille 20 une fois… enfin je crois"\\

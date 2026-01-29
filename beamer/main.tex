@@ -594,7 +594,10 @@
     \subsection{Nearest-Neighbors Gaussian Processes (Datta et al.)}
 	
 	\begin{frame}{Intuitive Idea}
-		idk
+		\begin{itemize}
+			\item It seems logical to assume that far away observations have little impact on the Kriging.
+			\item Instead Kriging the whole dataset,  we are Kriging each $x^{*}$ only with the nearest neighbors.
+		\end{itemize}
 	\end{frame}
 
   	 \begin{frame}{Theoretical Definition}

@@ -1,0 +1,13 @@
+{
+    "Type" : "GaussianProcesses",
+    "GaussianProcesses":{
+        "1" : {
+            "mean" : [0.0, 0.0, 0.0],
+            "covariance": [[1.0, 0.3, 0.1],
+                          [0.3, 0.8, 0.2],
+                          [0.1, 0.2, 1.2]],
+            "nb_samples": 1000
+        }
+
+    }
+}

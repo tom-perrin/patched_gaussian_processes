@@ -115,7 +115,7 @@
 		\vspace{0.5cm}
 
 		\begin{itemize}
-    			\item \textbf{Mean function :} $\mu(s) := \mathbb{E}[W(s)] \longrightarrow \mu := [\mu(s_1), \dots, \mu(s_N)^T].$
+    			\item \textbf{Mean function :} $\mu(s) := \mathbb{E}[W(s)] \longrightarrow \mu := [\mu(s_1), \dots, \mu(s_N)]^T$
 			 \item \textbf{Covariance function :} $C(s,s') := \mathbb{C}\mathrm{ov}[W(s),W(s')] \longrightarrow C := [C(s_i, s_j)]_{1\leqslant i,j \leqslant N}.$
 		\end{itemize}
 
@@ -146,7 +146,7 @@
    			 \begin{center}
         				$ p(f_*,y) \sim \mathcal{N} \left( 0, 
        			 	\begin{bmatrix}
-            				c_{**} & c_{x*}^T \\
+            				c_{**} & c_{*x} \\
             				c_{x*} & \sigma^2I+C_{xx}
        				 \end{bmatrix} \right).$
     			\end{center}
@@ -215,8 +215,8 @@
 		\vspace{0.5cm}
 
 		\begin{itemize}
-			\item \textbf{Time complexity :} Matrix inversion $\longrightarrow \boldsymbol{O(N^3)}.$
-			\item \textbf{Space complexity :} Storing covariance matrix $\longrightarrow \boldsymbol{O(N^2)}.$
+			\item \textbf{Time complexity :} Matrix inversion $\longrightarrow \boldsymbol{\mathcal{O}(N^3)}.$
+			\item \textbf{Space complexity :} Storing covariance matrix $\longrightarrow \boldsymbol{\mathcal{O}(N^2)}.$
 		\end{itemize}
 
 		\vspace{1cm}
@@ -230,7 +230,7 @@
 
 
    	 \begin{frame}{Independant Local Kriging}
-		\textbf{Idea :} Split the observations $\mathcal{D}$ into subsets $\mathcal{D}_1,\dots,\mathcal{D}_K$, with $\mathcal{D}_k := \left \{ (x_i, y_i) \mid x_i \in \Omega_k \right \}.$
+		\textbf{Idea :} Split the observations $\mathcal{D}$ into $K$ subsets $\mathcal{D}_1,\dots,\mathcal{D}_K$, with $\mathcal{D}_k := \left \{ (x_i, y_i) \mid x_i \in \Omega_k \right \}.$
 		\begin{center}
 			Region $\Omega_k \longrightarrow$ Local gaussian process $f_k \longrightarrow$ Associated covariance function $C_k(\cdot, \cdot)$.
 		\end{center}
@@ -319,7 +319,7 @@
 	%%----------------------------------------------------------------------
 	
 	
-	\section{Ideas to Tackle the Issues}
+	\section{Methods to Tackle the Issue}
 
     \subsection{Patchwork Kriging (Park and Aley)}
 	
@@ -504,7 +504,8 @@
 
 		\vspace{0.5cm}
 
-		Taking $\delta = 0$ finally leads to : $$ \mathbb{E} \left[ f_*^{(k)} \mid y, \delta = 0 \right] = \left( c_{*\mathcal{D}}^{(k)} - c_{*\delta}^{(k)} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right) \left(  C_{\mathcal{D}\mathcal{D}} - C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} y.$$
+		Taking $\delta = 0$ finally leads to :
+ $$ \mathbb{E} \left[ f_*^{(k)} \mid y, \delta = 0 \right] = \left( c_{*\mathcal{D}}^{(k)} - c_{*\delta}^{(k)} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right) \left(  C_{\mathcal{D}\mathcal{D}} - C_{\mathcal{D}\delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1} y.$$
 	\end{frame}
 
 	\begin{frame}{Proof}
@@ -575,7 +576,7 @@
 	
 		\vspace{0.5cm}
 
-		\textbf{Other hyperparameters :}
+		\textbf{Hyperparameters :}
 		\begin{itemize}
 			\item Number of regions $\boldsymbol{K}=2^D$ (where $D$ is the depth of the PCA partitioning).
 			\begin{itemize}
@@ -619,25 +620,95 @@
 	
 	
 	\section{Performance Comparison}
+	\begin{frame}{Complexity Analysis I}
+	For Method I (\textbf{Patchwork Kriging}), the expense is located in the computation of: \vspace{0.1cm}
+	\[
+	(C_{\delta\delta} - C_{\mathcal{D}\delta}^T C_{\mathcal{D}\mathcal{D}}^{-1} C_{\mathcal{D}\delta})^{-1}
+	\]
+
+  	\textbf{Reminder}
+    	\begin{itemize}
+      		\item<1-> $N$ observations in a space of dimension $d$
+ 		\item <1-> split into $K$ regions of $M=\frac{N}{K}$ points, with $B$ pseudo-observations at each boundary
+   	 \end{itemize}
 	
-	\begin{frame}{Title}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
+
+	\pause
+ 	 \textbf<2->{Complexity}
+ 	  \begin{itemize}
+       		\item<2-> $C_{\mathcal{D}\mathcal{D}}^{-1}$ block diagonal $\rightarrow \boldsymbol{\mathcal{O}(KM^3)}$
+       		\item<2-> $C_{\mathcal{D}\mathcal{D}}^{-1} C_{\mathcal{D}\delta}$ $\rightarrow \boldsymbol{\mathcal{O}(KBM^2)}$
+       		\item<2-> Inverting $C_{\delta\delta} - C_{\mathcal{D}\delta}^T C_{\mathcal{D}\mathcal{D}}^{-1} C_{\mathcal{D}\delta}$. As it is very sparse, we can use efficient methods to invert sparse matrix (\cite{chan1980linear}) $\longrightarrow \boldsymbol{\mathcal{O}(d^3B^3K)}$
+	\end{itemize}
+	
+	\pause
+	$$
+	\longrightarrow \boldsymbol{\mathcal{O}(KM^3 +KBM^2 + d^3B^3K )} \approx  \boldsymbol{\mathcal{O}(\frac{N^3}{K^2} + d^3B^3K )}
+	$$
 	\end{frame}	
 
 	%%----------------------------------------------------------------------
 	%%----------------------------------------------------------------------
 	
+
+	\begin{frame}{Complexity Analysis II}
+	For Method I (\textbf{NN-Kriging}), 
 	
+  	\textbf{Reminder}
+    	\begin{itemize}
+      		\item <1-> $N$ observations
+ 		\item <1-> for each new location, a neighbourhood of size $m$ is computed
+   	 \end{itemize}
+
+	\pause
+ 	 \textbf<2->{Complexity}
+ 	  \begin{itemize}
+       		\item<2-> detail ?
+	\end{itemize}
+	
+	\pause
+	$$
+	\longrightarrow \boldsymbol{\mathcal{O}(Nm^3 )}
+	$$
+	\end{frame}	
+
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+
+	\begin{frame}{Accuracy}
+	For Method I (\textbf{NN-Kriging}), 
+	
+  	\textbf{Reminder}
+    	\begin{itemize}
+      		\item <1-> $N$ observations
+ 		\item <1-> for each new location, a neighbourhood of size $m$ is computed
+   	 \end{itemize}
+
+	\pause
+ 	 \textbf<2->{Complexity}
+ 	  \begin{itemize}
+       		\item<2-> detail ?
+	\end{itemize}
+	
+	\pause
+	$$
+	\longrightarrow \boldsymbol{\mathcal{O}(Nm^3 )}
+	$$
+	\end{frame}	
+	
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+
 	\section{Conclusion}
 	
-	\begin{frame}{Title}
-		\begin{itemize}
-			\item Item
-			\item Item
-		\end{itemize}
+	\begin{frame}[c]{Conclusion}
+		\begin{center}
+			\begin{quote}
+				"On ne peut pas inverser une matrice de taille 20000 une fois, mais on peut inverser 20000 matrice de taille 20 une fois… enfin je crois"\\
+			\hfill — \textit{T. Lambert}
+			\end{quote}
+		\end{center}
 	\end{frame}	
 
 	%%----------------------------------------------------------------------

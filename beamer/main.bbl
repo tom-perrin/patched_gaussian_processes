@@ -1,5 +1,10 @@
 \begin{thebibliography}{}
 
+\bibitem[Chan and George, 1980]{chan1980linear}
+Chan, W.~M. and George, A. (1980).
+\newblock A linear time implementation of the reverse cuthill-mckee algorithm.
+\newblock {\em BIT Numerical Mathematics}, 20:8--14.
+
 \bibitem[Datta et~al., 2016]{datta-2016}
 Datta, A., Banerjee, S., Finley, A.~O., and Gelfand, A.~E. (2016).
 \newblock {On nearest‐neighbor Gaussian process models for massive spatial

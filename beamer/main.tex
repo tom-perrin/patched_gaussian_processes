@@ -623,21 +623,31 @@
     \subsection{Nearest-Neighbors Gaussian Processes (Datta et al.)}
 	
 	\begin{frame}{Intuitive Idea}
+
 		\begin{itemize}
 			\item It seems logical to assume that far away observations have little impact on the Kriging.
-			\item Instead Kriging the whole dataset,  we are Kriging each $x^{*}$ only with the nearest neighbors.
-			\item Restraining the Kriging to the $m$ nearest neighbors of each prediction location $x^*$ leads to a sub-optimal prediction.
-		
+			\item We now consider:		 	
 		\end{itemize}
-	\pause
+		$$f_\theta \sim \mathcal{N}(0, K_\theta)$$ \\
+		$$f(x^*) = \sum_{j=1}^{n}A_j y_j + \varepsilon $$ 
+
+		\vspace{0.5cm}
+		\begin{itemize}
+			\item With $A_j = \delta_{N(x^*)}$ Where $N(x^*)$ is the set of $x^*$ nearest neighbors.
+			\item Restraining the Kriging to the $m$ nearest neighbors of each prediction location $x^*$ leads to a sub-optimal prediction.
+			\item Our Kriging variance is now  $c_{**} - c_{N(x^*)*}^T(C_{N(x^*)N(x^*)})^{-1}c_{N(x^*)*}.$ for the given $x^*$.
+		\end{itemize}
 	\end{frame}
+	
+
 
   	 \begin{frame}{nearest-Neighbors}
 		Nearest-Neighbors are the points that have the highest spatial correlation with the prediction location $x^*$:
 		\begin{itemize}
 		\item In the case of stationary covariance functions, these are simply the closest points to $x^*$.
-		\item For non-stationary covariance functions, the nearest neighbors can be found by evaluating the covariance between $x^*$ and all observation locations and selecting the $m$ locations with the highest covariance values.
+		\item For non-stationary covariance functions, the nearest neighbors are the maxima of the covariance function with respect to $x^*$.
 		\end{itemize}
+		\vspace{-0.5cm}
 		\begin{center}
         % Syntaxe : \animategraphics[options]{FPS}{base_nom}{début}{fin}
         \animategraphics[autoplay,loop,width=0.4\textwidth]{0.8}{frames/frame_}{000}{009}
@@ -651,7 +661,10 @@
 		\begin{itemize}
 			\item First idea : running cross-validation for different values of $m$ and choosing the one that minimizes the prediction error.
 			\item In Bayesian Inference, m is treated as a parameter and updated in the MCMC algorithm.
-				\end{itemize}
+		\end{itemize}
+
+	\vspace{0.5cm}
+	$$ p(f_\theta, \beta, \theta, \tau^2 , m \mid y) \propto p(y \mid f_\theta, \beta, \tau^2) \times p(f_\theta \mid \theta) \times p(\beta)p(\theta)p(\tau^2)p(m)$$
 	\end{frame}
 	
 	%%----------------------------------------------------------------------
@@ -667,7 +680,7 @@
 
   	\textbf{Reminder}
     	\begin{itemize}
-      		\item<1-> $N$ observations in a space of dimension $d$
+      	\item<1-> $N$ observations in a space of dimension $d$
  		\item <1-> Split into $K$ regions of $M=\frac{N}{K}$ points, with $B$ pseudo-observations at each boundary
    	 \end{itemize}
 	
@@ -782,24 +795,23 @@
 	
 
 	\begin{frame}{Complexity Analysis II}
-	For Method I (\textbf{NN-Kriging}), 
+	For Method II (\textbf{NN-Kriging}), the expense is located in the computation of $$c_{**} - c_{N(x^*)*}^T(C_{N(x^*)N(x^*)})^{-1}c_{N(x^*)*}.$$ 
 	
+	\vspace{2cm}
   	\textbf{Reminder}
     	\begin{itemize}
-      		\item <1-> $N$ observations
+      		\item <1-> $N$ observations of a space of dimension $d$
  		\item <1-> for each new location, a neighbourhood of size $m$ is computed
    	 \end{itemize}
 
 	\pause
  	 \textbf<2->{Complexity}
  	  \begin{itemize}
-       		\item<2-> detail ?
-	\end{itemize}
+       		\item<1-> Computing a new location$(C_{N(x^*)N(x^*)})^{-1}\rightarrow \boldsymbol{\mathcal{O}(m^3)}$
+	     	\item<2-> Computing n new location$(C_{N(x^*)N(x^*)})^{-1}\rightarrow \boldsymbol{\mathcal{O}(nm^3)}$
+
+		\end{itemize}
 	
-	\pause
-	$$
-	\longrightarrow \boldsymbol{\mathcal{O}(Nm^3 )}
-	$$
 	\end{frame}	
 	
 	

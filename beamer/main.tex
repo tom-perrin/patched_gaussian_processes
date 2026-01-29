@@ -7,6 +7,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{tikz}
+\usepackage{tikzsymbols}
 \usepackage{pifont}
 \usepackage{animate}
 \usepackage{natbib}
@@ -557,7 +558,7 @@
 	\begin{frame}{Choice of the parameters}
 		\textbf{Covariance function :}
 		\begin{itemize}
-			\item Different for each region $\longrightarrow c_k(\cdot,\cdot)$ for $k\in\{1,\dots,K\}.$ 
+			\item Different for each region $\longrightarrow C_k(\cdot,\cdot)$ for $k\in\{1,\dots,K\}.$ 
 			\item Obtained by minimizing the negative log-likelihood :
 		\end{itemize}
 		$$
@@ -606,14 +607,14 @@
 		\begin{enumerate}
 			\item Partition the domain : $\Omega = \bigcup_{k=1}^K \Omega_k.$
 			\item Create the pseudo-observations $\delta_{k,\ell}$ on each $\Gamma_{k,\ell}.$
-			\item Use MLE to choose each covariance function $\C_k(\cdot,\cdot).$
+			\item Use MLE to choose each covariance function $C_k(\cdot,\cdot).$
 			\item Compute $\mathbb{E}\left[f_*^{(k)} \mid y, \delta = 0 \right]$ and $\mathbb{V}\left[f_*^{(k)} \mid y, \delta = 0 \right]$ :
 			\begin{itemize}
 				\item Comptute $Q = \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1}.$
 				\item Compute Cholesky decomposition of $C_{\delta\delta} = LL^T$
 				\item Deduce $v = L^{-1} C_{\delta\mathcal{D}}$ and $w_* = L^{-1} c_{\delta*}^{(k)}.$
 			\end{itemize}
-			\item Be happy.
+			\item Be happy \Changey{2}
 		\end{enumerate}
 	\end{frame}
 		
@@ -641,7 +642,7 @@
 	
 
 
-  	 \begin{frame}{nearest-Neighbors}
+  	 \begin{frame}{Nearest-Neighbors}
 		Nearest-Neighbors are the points that have the highest spatial correlation with the prediction location $x^*$:
 		\begin{itemize}
 		\item In the case of stationary covariance functions, these are simply the closest points to $x^*$.
@@ -657,7 +658,7 @@
 	\end{frame}
 
 
-   	\begin{frame}{Choosing m }
+   	\begin{frame}{Choosing m}
 		\begin{itemize}
 			\item First idea : running cross-validation for different values of $m$ and choosing the one that minimizes the prediction error.
 			\item In Bayesian Inference, m is treated as a parameter and updated in the MCMC algorithm.

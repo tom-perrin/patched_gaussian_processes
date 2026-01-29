@@ -599,6 +599,22 @@
 			\end{itemize}
 		\end{itemize}
 	\end{frame}
+
+	\begin{frame}{Algorithm}
+		\textbf{Steps :}
+		\begin{enumerate}
+			\item Partition the domain : $\Omega = \bigcup_{k=1}^K \Omega_k.$
+			\item Create the pseudo-observations $\delta_{k,\ell}$ on each $\Gamma_{k,\ell}.$
+			\item Use MLE to choose each covariance function $\C_k(\cdot,\cdot).$
+			\item Compute $\mathbb{E}\left[f_*^{(k)} \mid y, \delta = 0 \right]$ and $\mathbb{V}\left[f_*^{(k)} \mid y, \delta = 0 \right]$ :
+			\begin{itemize}
+				\item Comptute $Q = \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1}.$
+				\item Compute Cholesky decomposition of $C_{\delta\delta} = LL^T$
+				\item Deduce $v = L^{-1} C_{\delta\mathcal{D}}$ and $w_* = L^{-1} c_{\delta*}^{(k)}.$
+			\end{itemize}
+			\item Be happy.
+		\end{enumerate}
+	\end{frame}
 		
 
 	%%----------------------------------------------------------------------
@@ -640,7 +656,7 @@
   	\textbf{Reminder}
     	\begin{itemize}
       		\item<1-> $N$ observations in a space of dimension $d$
- 		\item <1-> split into $K$ regions of $M=\frac{N}{K}$ points, with $B$ pseudo-observations at each boundary
+ 		\item <1-> Split into $K$ regions of $M=\frac{N}{K}$ points, with $B$ pseudo-observations at each boundary
    	 \end{itemize}
 	
 
@@ -738,12 +754,12 @@
 	
 	\textbf{High dimensionality ?}
 	\begin{itemize}
-		\item recal that complexity $\longrightarrow \boldsymbol{\mathcal{O}(\frac{N^3}{K^2} + d^3B^3K )}$
-		\item experimentally, for $d > 10$, dimension is a determining factor for computation time
+		\item Recall the complexity $\longrightarrow \boldsymbol{\mathcal{O}(\frac{N^3}{K^2} + d^3B^3K )}$
+		\item Experimentally, for $d > 10$, dimension is a determining factor for computation time
 	\end{itemize}
 
 	$$
-		\rightarrow \text{trade-of quality/speed : keep } \frac{N}{K} \text{ and } dB \text{ as low as possible.}
+		\rightarrow \text{Trade-of quality/speed : keep } \frac{N}{K} \text{ and } dB \text{ as low as possible.}
 	$$
 
 	

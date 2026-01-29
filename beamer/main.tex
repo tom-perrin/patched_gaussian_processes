@@ -165,7 +165,7 @@
 		\vspace{0.5cm}
 
 		\begin{itemize}
-   			 \item \textbf{Predicted value :} $f_*(x^*) \approx c_{x*}^T(\sigma^2I+C_{xx})^{-1}y.$
+   			 \item \textbf{Predicted value :} $f(x^*) \approx c_{x*}^T(\sigma^2I+C_{xx})^{-1}y.$
   		 	 \item \textbf{Uncertainty :} $c_{**} - c_{x*}^T(\sigma^2I+C_{xx})^{-1}c_{x*}.$
 		     
 			\end{itemize} 
@@ -361,6 +361,17 @@
         				c^{(k)}_{\delta*} & C_{\delta\mathcal{D}} & C_{\delta\delta}
     			\end{bmatrix} \right).
     		\end{equation*}
+
+		\vspace{0.5cm}		
+
+		\begin{itemize}
+			\item On the border between regions $k$ and $l$ $\delta_{k,l} = f_k - f_l$
+			\item Under the asumption $f_k$ and $f_l$ are independent gaussian processes, $\delta_{k,l}$ is one too
+			\item Specifically, we can easily compute its covariance with $f_j(x)$, for a certain $x \in\mathcal{D}_j$
+		\end{itemize}
+		$$
+			\mathbb{C}\text{ov}(\delta_{k,l}(x_1) , f_j(x_2)) = \mathbb{C}\text{ov}(f_k(x_1) , f_j(x_2)) - \mathbb{C}\text{ov}(f_l(x_1) , f_j(x_2))
+		$$
 	\end{frame}
 
 	\begin{frame}{Patchwork Kriging}
@@ -589,6 +600,22 @@
 			\end{itemize}
 		\end{itemize}
 	\end{frame}
+
+	\begin{frame}{Algorithm}
+		\textbf{Steps :}
+		\begin{enumerate}
+			\item Partition the domain : $\Omega = \bigcup_{k=1}^K \Omega_k.$
+			\item Create the pseudo-observations $\delta_{k,\ell}$ on each $\Gamma_{k,\ell}.$
+			\item Use MLE to choose each covariance function $\C_k(\cdot,\cdot).$
+			\item Compute $\mathbb{E}\left[f_*^{(k)} \mid y, \delta = 0 \right]$ and $\mathbb{V}\left[f_*^{(k)} \mid y, \delta = 0 \right]$ :
+			\begin{itemize}
+				\item Comptute $Q = \left(C_{\mathcal{D} \mathcal{D}}-C_{\mathcal{D} \delta} C_{\delta\delta}^{-1} C_{\delta\mathcal{D}} \right)^{-1}.$
+				\item Compute Cholesky decomposition of $C_{\delta\delta} = LL^T$
+				\item Deduce $v = L^{-1} C_{\delta\mathcal{D}}$ and $w_* = L^{-1} c_{\delta*}^{(k)}.$
+			\end{itemize}
+			\item Be happy.
+		\end{enumerate}
+	\end{frame}
 		
 
 	%%----------------------------------------------------------------------
@@ -641,7 +668,7 @@
   	\textbf{Reminder}
     	\begin{itemize}
       		\item<1-> $N$ observations in a space of dimension $d$
- 		\item <1-> split into $K$ regions of $M=\frac{N}{K}$ points, with $B$ pseudo-observations at each boundary
+ 		\item <1-> Split into $K$ regions of $M=\frac{N}{K}$ points, with $B$ pseudo-observations at each boundary
    	 \end{itemize}
 	
 
@@ -657,6 +684,97 @@
 	$$
 	\longrightarrow \boldsymbol{\mathcal{O}(KM^3 +KBM^2 + d^3B^3K )} \approx  \boldsymbol{\mathcal{O}(\frac{N^3}{K^2} + d^3B^3K )}
 	$$
+	\end{frame}	
+
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+	
+
+	\begin{frame}{Accuracy}
+	For Method I (\textbf{Patchwork Kriging}), the accuracy concerns : \vspace{0.1cm}
+    	\begin{itemize}
+      		\item <1-> Quality of local reconstruction
+ 		\item <1-> Quality of "stiches" (junctions of regions)
+   	 \end{itemize}
+	
+	\only<2->{
+	\vspace{0.3cm}
+	\begin{columns}[T]
+ 		 \begin{column}{0.5\textwidth}
+   			 \begin{figure}
+    				\includegraphics[width=.8\textwidth]{figures/Recollement_B_1.png}
+    				\vspace*{-0.3cm}
+     				\caption{B = 0}
+   			 \end{figure}
+ 		 \end{column}
+ 		 \begin{column}{0.5\textwidth}
+   			 \begin{figure}
+    				\includegraphics[width=.8\textwidth]{figures/Recollement_B_2.png}
+     				\vspace*{-0.3cm}
+      				\caption{B = 5}
+   			 \end{figure}
+  		\end{column}
+	\end{columns}
+	}
+	\end{frame}	
+	
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+
+	\begin{frame}{Results}
+	In \cite{parkchiwoo-2018}, Tests have been made to understand the extent of the Patchwork Kriging Technique
+
+	\begin{itemize}
+		\item Result are the most accurate for \textbf{long-range, stationary} covariance functions.
+		\item Stitching accuracy is \textbf{conditioned by $B$}, but stops for $B \geq 8$
+	\end{itemize}
+
+	\only<2->{
+	\vspace{0.3cm}
+	\begin{columns}[T]
+ 		 \begin{column}{0.5\textwidth}
+   			 \begin{figure}
+    				\includegraphics[width=.8\textwidth]{figures/obs_bruitées.png}
+    				\vspace*{-0.3cm}
+     				\caption{Observations bruitées}
+   			 \end{figure}
+ 		 \end{column}
+ 		 \begin{column}{0.5\textwidth}
+   			 \begin{figure}
+    				\includegraphics[width=.8\textwidth]{figures/champ_prédit.png}
+     				\vspace*{-0.3cm}
+      				\caption{Champ prédit}
+   			 \end{figure}
+  		\end{column}
+	\end{columns}
+	}
+	\end{frame}
+
+
+	%%----------------------------------------------------------------------
+	%%----------------------------------------------------------------------
+
+	\begin{frame}{Results}
+	In \cite{parkchiwoo-2018}, Tests have been made to understand the extent of the Patchwork Kriging Technique
+
+	\begin{itemize}
+		\item Result are the most accurate for \textbf{long-range, stationary} covariance functions.
+		\item Stitching accuracy is \textbf{conditioned by $B$}, but stops for $B \geq 8$
+	\end{itemize}
+	
+	\vspace{0.3cm}
+	
+	\textbf{High dimensionality ?}
+	\begin{itemize}
+		\item Recall the complexity $\longrightarrow \boldsymbol{\mathcal{O}(\frac{N^3}{K^2} + d^3B^3K )}$
+		\item Experimentally, for $d > 10$, dimension is a determining factor for computation time
+	\end{itemize}
+
+	$$
+		\rightarrow \text{Trade-of quality/speed : keep } \frac{N}{K} \text{ and } dB \text{ as low as possible.}
+	$$
+
+	
 	\end{frame}	
 
 	%%----------------------------------------------------------------------
@@ -683,31 +801,7 @@
 	\longrightarrow \boldsymbol{\mathcal{O}(Nm^3 )}
 	$$
 	\end{frame}	
-
-	%%----------------------------------------------------------------------
-	%%----------------------------------------------------------------------
 	
-
-	\begin{frame}{Accuracy}
-	For Method I (\textbf{NN-Kriging}), 
-	
-  	\textbf{Reminder}
-    	\begin{itemize}
-      		\item <1-> $N$ observations
- 		\item <1-> for each new location, a neighbourhood of size $m$ is computed
-   	 \end{itemize}
-
-	\pause
- 	 \textbf<2->{Complexity}
- 	  \begin{itemize}
-       		\item<2-> detail ?
-	\end{itemize}
-	
-	\pause
-	$$
-	\longrightarrow \boldsymbol{\mathcal{O}(Nm^3 )}
-	$$
-	\end{frame}	
 	
 	%%----------------------------------------------------------------------
 	%%----------------------------------------------------------------------
@@ -716,9 +810,15 @@
 	
 	\begin{frame}[c]{Conclusion}
 		\begin{center}
+			Merci pour votre attention !
+		\end{center}
+			
+		\vspace{1.5cm}
+		\pause
+		\begin{center}
 			\begin{quote}
 				"On ne peut pas inverser une matrice de taille 20000 une fois, mais on peut inverser 20000 matrice de taille 20 une fois… enfin je crois"\\
-			\hfill — \textit{T. Lambert}
+			\hfill — \textit{L. Lambert}
 			\end{quote}
 		\end{center}
 	\end{frame}	
